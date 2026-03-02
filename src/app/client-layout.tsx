@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { SessionProvider } from "next-auth/react";
 
-export default function Navbar() {
+function Navbar() {
     const { data: session } = useSession();
-    const [menuOpen, setMenuOpen] = useState(false);
 
     return (
         <nav
@@ -32,7 +31,6 @@ export default function Navbar() {
                     justifyContent: "space-between",
                 }}
             >
-                {/* Logo */}
                 <Link href="/" style={{ textDecoration: "none" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div
@@ -65,7 +63,6 @@ export default function Navbar() {
                     </div>
                 </Link>
 
-                {/* Nav links */}
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     {session ? (
                         <>
@@ -185,5 +182,14 @@ export default function Navbar() {
                 </div>
             </div>
         </nav>
+    );
+}
+
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <SessionProvider>
+            <Navbar />
+            <main>{children}</main>
+        </SessionProvider>
     );
 }

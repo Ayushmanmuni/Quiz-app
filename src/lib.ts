@@ -1,6 +1,12 @@
+import { PrismaClient } from "@prisma/client";
 import { HfInference } from "@huggingface/inference";
 
-// Hugging Face — Free Serverless Inference API
+// ── Prisma singleton ──
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+// ── AI quiz generation ──
 const hf = new HfInference(process.env.HF_TOKEN);
 
 export interface GeneratedQuestion {
@@ -43,7 +49,6 @@ Rules:
 - Questions from the text only
 - Return ONLY the JSON array`;
 
-    // Try multiple models in case one is unavailable
     const models = [
         "Qwen/Qwen2.5-72B-Instruct",
         "meta-llama/Llama-3.3-70B-Instruct",
@@ -57,10 +62,7 @@ Rules:
             const response = await hf.chatCompletion({
                 model,
                 messages: [
-                    {
-                        role: "system",
-                        content: "You are an expert quiz generator. Output ONLY valid JSON arrays. No markdown.",
-                    },
+                    { role: "system", content: "You are an expert quiz generator. Output ONLY valid JSON arrays. No markdown." },
                     { role: "user", content: prompt },
                 ],
                 max_tokens: 4096,
@@ -68,14 +70,8 @@ Rules:
             });
 
             let responseText = response.choices[0]?.message?.content?.trim() || "";
+            responseText = responseText.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
 
-            // Clean markdown fences
-            responseText = responseText
-                .replace(/```json\n?/gi, "")
-                .replace(/```\n?/g, "")
-                .trim();
-
-            // Extract JSON array
             const arrayStart = responseText.indexOf("[");
             const arrayEnd = responseText.lastIndexOf("]");
             if (arrayStart !== -1 && arrayEnd !== -1) {
