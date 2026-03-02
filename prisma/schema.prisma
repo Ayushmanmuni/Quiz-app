@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String        @unique
+  password      String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  quizzes       Quiz[]
+  attempts      QuizAttempt[]
+}
+
+model Quiz {
+  id            String        @id @default(cuid())
+  title         String
+  difficulty    String        // "easy" | "medium" | "hard"
+  sourceText    String
+  createdAt     DateTime      @default(now())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions     Question[]
+  attempts      QuizAttempt[]
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctAnswer String   // "A" | "B" | "C" | "D"
+  explanation   String
+  order         Int      @default(0)
+}
+
+model QuizAttempt {
+  id             String   @id @default(cuid())
+  userId         String
+  quizId         String
+  score          Int
+  totalQuestions Int
+  answers        String   // JSON: { questionId: selectedOption }
+  completedAt    DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz           Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
