@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -23,7 +23,8 @@ interface Quiz {
     questions: Question[];
 }
 
-export default function QuizPage({ params }: { params: { id: string } }) {
+export default function QuizPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const { data: session } = useSession();
     const router = useRouter();
     const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -34,14 +35,14 @@ export default function QuizPage({ params }: { params: { id: string } }) {
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        fetch(`/api/quiz/${params.id}`)
+        fetch(`/api/quiz/${id}`)
             .then((r) => r.json())
             .then((data) => {
                 setQuiz(data);
                 setLoading(false);
             })
             .catch(() => setLoading(false));
-    }, [params.id]);
+    }, [id]);
 
     const handleSelect = (questionId: string, option: string) => {
         if (submitted) return;
@@ -80,7 +81,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
         setSubmitting(false);
         if (res.ok) {
             const data = await res.json();
-            router.push(`/quiz/${params.id}/results?attempt=${data.attemptId}`);
+            router.push(`/quiz/${id}/results?attempt=${data.attemptId}`);
         }
     };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -23,7 +23,7 @@ interface Quiz {
     questions: Question[];
 }
 
-function ResultsContent({ params }: { params: { id: string } }) {
+function ResultsContent({ id }: { id: string }) {
     const searchParams = useSearchParams();
     const attemptId = searchParams.get("attempt");
     const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -32,7 +32,7 @@ function ResultsContent({ params }: { params: { id: string } }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`/api/quiz/${params.id}`)
+        fetch(`/api/quiz/${id}`)
             .then((r) => r.json())
             .then((data) => {
                 setQuiz(data);
@@ -47,7 +47,7 @@ function ResultsContent({ params }: { params: { id: string } }) {
                     if (data.score !== undefined) setScore(data.score);
                 });
         }
-    }, [params.id, attemptId]);
+    }, [id, attemptId]);
 
     if (loading) {
         return (
@@ -251,10 +251,11 @@ function ResultsContent({ params }: { params: { id: string } }) {
     );
 }
 
-export default function ResultsPage({ params }: { params: { id: string } }) {
+export default function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     return (
         <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", padding: "120px" }}><div className="spinner" /></div>}>
-            <ResultsContent params={params} />
+            <ResultsContent id={id} />
         </Suspense>
     );
 }
