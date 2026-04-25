@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -24,6 +24,25 @@ export default function UploadPage() {
     const [activeTab, setActiveTab] = useState<"paste" | "upload">("paste");
     const [fileName, setFileName] = useState("");
     const fileRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        try {
+            const stored = window.localStorage.getItem("quizai_difficulty");
+            if (!stored) return;
+            const parsed = JSON.parse(stored) as string;
+            if (["easy", "medium", "hard"].includes(parsed)) setDifficulty(parsed);
+        } catch {
+            // ignore
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem("quizai_difficulty", JSON.stringify(difficulty));
+        } catch {
+            // ignore
+        }
+    }, [difficulty]);
 
     const handleFileUpload = async (file: File) => {
         setUploadLoading(true);
@@ -179,7 +198,7 @@ export default function UploadPage() {
                                 <div className="spinner" style={{ width: "20px", height: "20px", borderWidth: "2px" }} />
                                 <span>Generating {numQuestions} Questions with AI...</span>
                             </div>
-                        ) : `🤖 Generate ${numQuestions} Questions`}
+                        ) : ` Generate ${numQuestions} Questions`}
                     </button>
 
                     {loading && (

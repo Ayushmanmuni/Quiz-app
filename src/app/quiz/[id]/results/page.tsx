@@ -77,7 +77,7 @@ function ResultsContent({ id }: { id: string }) {
                     <p style={{ color: "rgba(175,175,210,0.6)", marginTop: "20px", fontSize: "15px" }}>{getResultMsg()}</p>
 
                     <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "36px", flexWrap: "wrap" }}>
-                        <Link href="/upload"><button className="btn-primary">🤖 New Quiz</button></Link>
+                        <Link href="/upload"><button className="btn-primary">New Quiz</button></Link>
                         <Link href="/dashboard"><button className="btn-secondary">📊 Dashboard</button></Link>
                     </div>
                 </div>

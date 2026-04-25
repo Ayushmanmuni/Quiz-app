@@ -55,15 +55,15 @@ export default function RegisterPage() {
                     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                         <div>
                             <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "8px" }}>Full Name</label>
-                            <input type="text" className="input-field" placeholder="Ayush Sharma" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required id="name" />
+                            <input type="text" className="input-field" placeholder=".................." value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required id="name" />
                         </div>
                         <div>
                             <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "8px" }}>Email Address</label>
-                            <input type="email" className="input-field" placeholder="you@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required id="email" />
+                            <input type="email" className="input-field" placeholder="........@gmail.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required id="email" />
                         </div>
                         <div>
                             <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "8px" }}>Password</label>
-                            <input type="password" className="input-field" placeholder="Min. 6 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required id="password" />
+                            <input type="password" className="input-field" placeholder="Min. 8 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required id="password" />
                         </div>
                         <div>
                             <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "8px" }}>Confirm Password</label>

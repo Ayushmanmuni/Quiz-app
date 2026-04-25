@@ -25,7 +25,12 @@ export default function LoginPage() {
         setLoading(false);
 
         if (result?.error) {
-            setError("Invalid email or password. Please try again.");
+            // NextAuth uses "CredentialsSignin" for invalid creds; everything else is usually server/config/DB.
+            setError(
+                result.error === "CredentialsSignin"
+                    ? "Invalid email or password. Please try again."
+                    : "Sign-in failed due to a server error (often: database not reachable). Check your DATABASE_URL and try again."
+            );
         } else {
             router.push("/dashboard");
             router.refresh();

@@ -82,7 +82,7 @@ export default function DashboardPage() {
                             <div style={{ fontSize: "60px", marginBottom: "16px" }}>🎯</div>
                             <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>No quizzes yet</h3>
                             <p style={{ color: "rgba(175,175,210,0.6)", marginBottom: "28px", fontSize: "15px" }}>Generate your first AI-powered quiz from any document or text.</p>
-                            <Link href="/upload"><button className="btn-primary">🤖 Generate First Quiz</button></Link>
+                            <Link href="/upload"><button className="btn-primary"> Generate First Quiz</button></Link>
                         </div>
                     ) : (
                         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
