@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { supabase } from "../lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [

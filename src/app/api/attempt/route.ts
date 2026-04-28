@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 // POST — Submit quiz attempt
 export async function POST(req: NextRequest) {

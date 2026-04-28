@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateQuizQuestions, generateTopicQuiz } from "@/lib";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 // POST — Generate quiz (file upload, text, or topic-based)
 export async function POST(req: NextRequest) {

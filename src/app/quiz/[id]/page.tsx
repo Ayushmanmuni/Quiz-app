@@ -22,6 +22,7 @@ interface Quiz {
     title: string;
     difficulty: string;
     mode: string;
+    sourceText: string;
     questions: Question[];
 }
 
@@ -97,37 +98,17 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                             <span style={{ fontSize: "28px" }}>📖</span>
                             <div>
                                 <h1 style={{ fontSize: "24px", fontWeight: 800 }}>{quiz.title}</h1>
-                                <p style={{ color: "rgba(175,175,210,0.6)", fontSize: "14px" }}>Study Mode — Read the explanations first, then take the quiz</p>
+                                <p style={{ color: "rgba(175,175,210,0.6)", fontSize: "14px" }}>Study Mode — Read the abstract first, then take the quiz</p>
                             </div>
                         </div>
                         <div style={{ background: "rgba(79,110,247,0.06)", border: "1px solid rgba(79,110,247,0.15)", borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "14px", color: "rgba(175,175,210,0.8)" }}>
-                            💡 Read through each question and its explanation carefully. When you feel ready, click &quot;Start Quiz&quot; to test yourself.
+                            💡 Read through the summary below carefully. When you feel ready, click &quot;Start Quiz&quot; to test yourself.
                         </div>
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "32px" }}>
-                        {quiz.questions.map((q, i) => (
-                            <div key={q.id} className="glass animate-fade-in" style={{ padding: "24px" }}>
-                                <div style={{ fontSize: "12px", fontWeight: 600, color: "rgba(175,175,210,0.5)", marginBottom: "8px" }}>Question {i + 1} {q.difficulty !== "medium" && <span className={`badge badge-${q.difficulty}`} style={{ marginLeft: "8px", fontSize: "10px" }}>{q.difficulty}</span>}</div>
-                                <p style={{ fontSize: "16px", fontWeight: 600, color: "#f0f0ff", lineHeight: 1.6, marginBottom: "16px" }}>{q.questionText}</p>
-                                <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
-                                    {(["A", "B", "C", "D"] as const).map((opt) => {
-                                        const optTexts: Record<string, string> = { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
-                                        const isCorrect = opt === q.correctAnswer;
-                                        return (
-                                            <div key={opt} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", borderRadius: "8px", border: `1px solid ${isCorrect ? "rgba(16,217,138,0.4)" : "rgba(255,255,255,0.06)"}`, background: isCorrect ? "rgba(16,217,138,0.08)" : "rgba(255,255,255,0.02)", fontSize: "14px", color: isCorrect ? "#10d98a" : "rgba(175,175,210,0.6)" }}>
-                                                <span style={{ width: "20px", fontWeight: 700 }}>{opt}.</span>
-                                                <span style={{ flex: 1 }}>{optTexts[opt]}</span>
-                                                {isCorrect && <span>✓</span>}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <div style={{ background: "rgba(79,110,247,0.06)", border: "1px solid rgba(79,110,247,0.15)", borderRadius: "10px", padding: "14px 16px", fontSize: "13px", color: "rgba(175,175,210,0.85)", lineHeight: 1.6 }}>
-                                    <span style={{ fontWeight: 700, color: "#6b8cff" }}>💡 Explanation: </span>{q.explanation}
-                                </div>
-                            </div>
-                        ))}
+                    <div className="glass animate-fade-in" style={{ padding: "32px", marginBottom: "32px", fontSize: "16px", lineHeight: "1.8", color: "#f0f0ff", whiteSpace: "pre-wrap" }}>
+                        <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "16px", color: "#6b8cff" }}>Topic Abstract</h2>
+                        {quiz.sourceText || "No abstract available for this topic."}
                     </div>
 
                     <button className="btn-primary" onClick={() => setStudyPhase(false)} style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "16px" }}>

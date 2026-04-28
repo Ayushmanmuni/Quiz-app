@@ -102,9 +102,9 @@ export default function UploadPage() {
         });
 
         const data = await res.json();
-        setLoading(false);
 
         if (!res.ok) {
+            setLoading(false);
             setError(data.error || "Failed to generate quiz");
         } else {
             router.push(`/quiz/${data.quizId}`);
