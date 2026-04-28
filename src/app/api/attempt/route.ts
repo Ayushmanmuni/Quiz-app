@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib";
+import { supabase } from "../../../../lib/supabase";
 
 // POST — Submit quiz attempt
 export async function POST(req: NextRequest) {
@@ -15,15 +15,22 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const attempt = await prisma.quizAttempt.create({
-            data: {
-                userId: session.user.id,
-                quizId,
+        const { data: attempt, error } = await supabase
+            .from("quiz_attempts")
+            .insert({
+                user_id: session.user.id,
+                quiz_id: quizId,
                 score,
-                totalQuestions,
-                answers: JSON.stringify(answers),
-            },
-        });
+                total_questions: totalQuestions,
+                answers: typeof answers === "string" ? JSON.parse(answers) : answers,
+            })
+            .select("id")
+            .single();
+
+        if (error) {
+            console.error("Save attempt error:", error);
+            return NextResponse.json({ error: "Failed to save attempt" }, { status: 500 });
+        }
 
         return NextResponse.json({ attemptId: attempt.id }, { status: 201 });
     } catch (error) {
@@ -32,7 +39,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
-// GET — Fetch attempt by id (?id=xxx) or all user attempts for dashboard (no params)
+// GET — Fetch attempt by id (?id=xxx) or all user attempts for dashboard
 export async function GET(req: NextRequest) {
     try {
         const session = await auth();
@@ -43,22 +50,47 @@ export async function GET(req: NextRequest) {
         const id = req.nextUrl.searchParams.get("id");
 
         if (id) {
-            // Single attempt
-            const attempt = await prisma.quizAttempt.findUnique({ where: { id } });
-            if (!attempt) {
+            const { data: attempt, error } = await supabase
+                .from("quiz_attempts")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+            if (error || !attempt) {
                 return NextResponse.json({ error: "Attempt not found" }, { status: 404 });
             }
-            return NextResponse.json(attempt);
+
+            return NextResponse.json({
+                ...attempt,
+                answers: JSON.stringify(attempt.answers),
+                completedAt: attempt.completed_at,
+                totalQuestions: attempt.total_questions,
+            });
         }
 
         // All attempts for dashboard
-        const attempts = await prisma.quizAttempt.findMany({
-            where: { userId: session.user.id },
-            include: { quiz: { select: { title: true, difficulty: true } } },
-            orderBy: { completedAt: "desc" },
-        });
+        const { data: attempts, error } = await supabase
+            .from("quiz_attempts")
+            .select("*, quizzes(title, difficulty, mode)")
+            .eq("user_id", session.user.id)
+            .order("completed_at", { ascending: false });
 
-        return NextResponse.json(attempts);
+        if (error) {
+            console.error("Dashboard error:", error);
+            return NextResponse.json({ error: "Failed to fetch attempts" }, { status: 500 });
+        }
+
+        // Map for frontend compatibility
+        const mapped = (attempts || []).map((a: Record<string, unknown>) => ({
+            id: a.id,
+            score: a.score,
+            totalQuestions: a.total_questions,
+            completedAt: a.completed_at,
+            quizId: a.quiz_id,
+            quiz: a.quizzes || { title: "Unknown", difficulty: "medium", mode: "standard" },
+        }));
+
+        return NextResponse.json(mapped);
     } catch (error) {
         console.error("Attempt API error:", error);
         return NextResponse.json({ error: "Failed to fetch attempt(s)" }, { status: 500 });

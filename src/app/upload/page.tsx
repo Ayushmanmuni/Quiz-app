@@ -5,9 +5,15 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 const DIFFICULTIES = [
-    { value: "easy", label: "Easy", icon: "🟢", desc: "Factual recall questions" },
-    { value: "medium", label: "Medium", icon: "🟡", desc: "Comprehension & application" },
-    { value: "hard", label: "Hard", icon: "🔴", desc: "Analysis & synthesis" },
+    { value: "easy", label: "Easy", icon: "🟢", desc: "Factual recall" },
+    { value: "medium", label: "Medium", icon: "🟡", desc: "Comprehension" },
+    { value: "hard", label: "Hard", icon: "🔴", desc: "Analysis" },
+];
+
+const MODES = [
+    { value: "standard", label: "Standard", icon: "📝", desc: "Classic quiz format" },
+    { value: "study", label: "Study", icon: "📖", desc: "Learn first, quiz after" },
+    { value: "adaptive", label: "Adaptive", icon: "🎯", desc: "Difficulty adjusts to you" },
 ];
 
 export default function UploadPage() {
@@ -16,12 +22,14 @@ export default function UploadPage() {
 
     const [text, setText] = useState("");
     const [title, setTitle] = useState("");
+    const [topic, setTopic] = useState("");
     const [difficulty, setDifficulty] = useState("medium");
+    const [mode, setMode] = useState("standard");
     const [numQuestions, setNumQuestions] = useState(10);
     const [loading, setLoading] = useState(false);
     const [uploadLoading, setUploadLoading] = useState(false);
     const [error, setError] = useState("");
-    const [activeTab, setActiveTab] = useState<"paste" | "upload">("paste");
+    const [activeTab, setActiveTab] = useState<"paste" | "upload" | "topic">("paste");
     const [fileName, setFileName] = useState("");
     const fileRef = useRef<HTMLInputElement>(null);
 
@@ -31,17 +39,11 @@ export default function UploadPage() {
             if (!stored) return;
             const parsed = JSON.parse(stored) as string;
             if (["easy", "medium", "hard"].includes(parsed)) setDifficulty(parsed);
-        } catch {
-            // ignore
-        }
+        } catch { /* ignore */ }
     }, []);
 
     useEffect(() => {
-        try {
-            window.localStorage.setItem("quizai_difficulty", JSON.stringify(difficulty));
-        } catch {
-            // ignore
-        }
+        try { window.localStorage.setItem("quizai_difficulty", JSON.stringify(difficulty)); } catch { /* ignore */ }
     }, [difficulty]);
 
     const handleFileUpload = async (file: File) => {
@@ -63,22 +65,40 @@ export default function UploadPage() {
     };
 
     const handleGenerate = async () => {
-        if (!text.trim() || text.trim().length < 100) {
-            setError("Please provide at least 100 characters of text.");
-            return;
+        if (activeTab === "topic") {
+            if (!topic.trim() || topic.trim().length < 3) {
+                setError("Please enter a topic (at least 3 characters).");
+                return;
+            }
+        } else {
+            if (!text.trim() || text.trim().length < 100) {
+                setError("Please provide at least 100 characters of text.");
+                return;
+            }
         }
+
         setError("");
         setLoading(true);
+
+        const body: Record<string, unknown> = {
+            difficulty,
+            numQuestions,
+            mode,
+            title: title || (activeTab === "topic" ? `${topic} Quiz` : `Quiz – ${new Date().toLocaleDateString("en-IN")}`),
+        };
+
+        if (activeTab === "topic") {
+            body.topic = topic;
+            body.source = "topic";
+        } else {
+            body.text = text;
+            body.source = activeTab === "upload" ? "file" : "text";
+        }
 
         const res = await fetch("/api/quiz", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                text,
-                difficulty,
-                numQuestions,
-                title: title || `Quiz – ${new Date().toLocaleDateString("en-IN")}`,
-            }),
+            body: JSON.stringify(body),
         });
 
         const data = await res.json();
@@ -101,13 +121,19 @@ export default function UploadPage() {
         );
     }
 
+    const tabs = [
+        { key: "paste" as const, label: "✏️ Paste Text" },
+        { key: "upload" as const, label: "📁 Upload File" },
+        { key: "topic" as const, label: "💡 Enter Topic" },
+    ];
+
     return (
         <div style={{ position: "relative", minHeight: "calc(100vh - 72px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto", padding: "50px 24px" }}>
                 <div className="animate-slide-up">
                     <h1 style={{ fontSize: "32px", fontWeight: 800, marginBottom: "8px" }}>✨ Generate New Quiz</h1>
-                    <p style={{ color: "rgba(175,175,210,0.7)", marginBottom: "40px", fontSize: "15px" }}>Paste your text or upload a document — AI does the rest</p>
+                    <p style={{ color: "rgba(175,175,210,0.7)", marginBottom: "40px", fontSize: "15px" }}>Paste text, upload a file, or just enter a topic — AI does the rest</p>
                 </div>
 
                 <div className="glass-strong animate-slide-up" style={{ padding: "36px" }}>
@@ -116,23 +142,27 @@ export default function UploadPage() {
                         <input type="text" className="input-field" placeholder="e.g. CBSE Physics Chapter 5" value={title} onChange={(e) => setTitle(e.target.value)} id="quiz-title" />
                     </div>
 
+                    {/* Source Tabs */}
                     <div style={{ display: "flex", gap: "4px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "4px", marginBottom: "20px", width: "fit-content" }}>
-                        {(["paste", "upload"] as const).map((tab) => (
-                            <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? "rgba(79,110,247,0.2)" : "transparent", border: activeTab === tab ? "1px solid rgba(79,110,247,0.4)" : "1px solid transparent", borderRadius: "8px", padding: "8px 20px", color: activeTab === tab ? "#6b8cff" : "rgba(175,175,210,0.6)", fontWeight: activeTab === tab ? 600 : 400, fontSize: "14px", cursor: "pointer", transition: "all 0.2s ease" }}>
-                                {tab === "paste" ? "✏️ Paste Text" : "📁 Upload File"}
+                        {tabs.map((tab) => (
+                            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ background: activeTab === tab.key ? "rgba(79,110,247,0.2)" : "transparent", border: activeTab === tab.key ? "1px solid rgba(79,110,247,0.4)" : "1px solid transparent", borderRadius: "8px", padding: "8px 20px", color: activeTab === tab.key ? "#6b8cff" : "rgba(175,175,210,0.6)", fontWeight: activeTab === tab.key ? 600 : 400, fontSize: "14px", cursor: "pointer", transition: "all 0.2s ease" }}>
+                                {tab.label}
                             </button>
                         ))}
                     </div>
 
-                    {activeTab === "paste" ? (
+                    {/* Content Area */}
+                    {activeTab === "paste" && (
                         <div style={{ marginBottom: "28px" }}>
                             <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "8px" }}>Your Content</label>
-                            <textarea className="input-field" placeholder="Paste your text, notes, article, or any content here... (minimum 100 characters)" value={text} onChange={(e) => setText(e.target.value)} rows={10} style={{ resize: "vertical", lineHeight: "1.6" }} id="content-text" />
+                            <textarea className="input-field" placeholder="Paste your text, notes, article... (minimum 100 characters)" value={text} onChange={(e) => setText(e.target.value)} rows={10} style={{ resize: "vertical", lineHeight: "1.6" }} id="content-text" />
                             <div style={{ marginTop: "6px", fontSize: "12px", color: text.length < 100 ? "#ff4d6d" : "#10d98a" }}>
                                 {text.length} characters {text.length < 100 ? `(need ${100 - text.length} more)` : "✓"}
                             </div>
                         </div>
-                    ) : (
+                    )}
+
+                    {activeTab === "upload" && (
                         <div style={{ marginBottom: "28px" }}>
                             <input type="file" ref={fileRef} onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])} accept=".txt,.pdf,.md" style={{ display: "none" }} id="file-input" />
                             <div className="drop-zone" onClick={() => fileRef.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileUpload(f); }}>
@@ -160,10 +190,35 @@ export default function UploadPage() {
                         </div>
                     )}
 
+                    {activeTab === "topic" && (
+                        <div style={{ marginBottom: "28px" }}>
+                            <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "8px" }}>Topic</label>
+                            <input type="text" className="input-field" placeholder="e.g. Photosynthesis, World War II, Machine Learning..." value={topic} onChange={(e) => setTopic(e.target.value)} id="topic-input" />
+                            <p style={{ marginTop: "8px", fontSize: "12px", color: "rgba(175,175,210,0.5)" }}>AI will generate content about this topic and create a quiz from it — no text needed!</p>
+                        </div>
+                    )}
+
                     <div className="divider" />
 
+                    {/* Quiz Mode */}
                     <div style={{ marginBottom: "28px" }}>
-                        <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "14px" }}>Difficulty Level</label>
+                        <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "14px" }}>Quiz Mode</label>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+                            {MODES.map((m) => (
+                                <button key={m.value} onClick={() => setMode(m.value)} style={{ padding: "14px 12px", borderRadius: "12px", border: `1px solid ${mode === m.value ? "rgba(79,110,247,0.5)" : "rgba(255,255,255,0.07)"}`, background: mode === m.value ? "rgba(79,110,247,0.12)" : "rgba(255,255,255,0.03)", cursor: "pointer", textAlign: "center", transition: "all 0.2s ease" }}>
+                                    <div style={{ fontSize: "22px", marginBottom: "6px" }}>{m.icon}</div>
+                                    <div style={{ fontWeight: 700, fontSize: "14px", color: mode === m.value ? "#6b8cff" : "#f0f0ff", marginBottom: "4px" }}>{m.label}</div>
+                                    <div style={{ fontSize: "11px", color: "rgba(175,175,210,0.5)" }}>{m.desc}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Difficulty */}
+                    <div style={{ marginBottom: "28px" }}>
+                        <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "14px" }}>
+                            {mode === "adaptive" ? "Starting Difficulty" : "Difficulty Level"}
+                        </label>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
                             {DIFFICULTIES.map((d) => (
                                 <button key={d.value} onClick={() => setDifficulty(d.value)} style={{ padding: "14px 12px", borderRadius: "12px", border: `1px solid ${difficulty === d.value ? "rgba(79,110,247,0.5)" : "rgba(255,255,255,0.07)"}`, background: difficulty === d.value ? "rgba(79,110,247,0.12)" : "rgba(255,255,255,0.03)", cursor: "pointer", textAlign: "center", transition: "all 0.2s ease" }}>
@@ -175,6 +230,7 @@ export default function UploadPage() {
                         </div>
                     </div>
 
+                    {/* Question Count */}
                     <div style={{ marginBottom: "32px" }}>
                         <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px", fontWeight: 600, color: "rgba(175,175,210,0.9)", marginBottom: "12px" }}>
                             <span>Number of Questions</span>
@@ -198,12 +254,12 @@ export default function UploadPage() {
                                 <div className="spinner" style={{ width: "20px", height: "20px", borderWidth: "2px" }} />
                                 <span>Generating {numQuestions} Questions with AI...</span>
                             </div>
-                        ) : ` Generate ${numQuestions} Questions`}
+                        ) : `🚀 Generate ${numQuestions} Questions`}
                     </button>
 
                     {loading && (
                         <p style={{ textAlign: "center", fontSize: "13px", color: "rgba(175,175,210,0.5)", marginTop: "12px" }}>
-                            Hugging Face AI is analyzing your content. This takes 10–30 seconds...
+                            {activeTab === "topic" ? "AI is creating content and generating questions..." : "Hugging Face AI is analyzing your content. This takes 10–30 seconds..."}
                         </p>
                     )}
                 </div>

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma, generateQuizQuestions } from "@/lib";
+import { generateQuizQuestions, generateTopicQuiz } from "@/lib";
+import { supabase } from "../../../../lib/supabase";
 
-// POST — Generate quiz (handles both text upload + AI generation)
+// POST — Generate quiz (file upload, text, or topic-based)
 export async function POST(req: NextRequest) {
     try {
         const session = await auth();
@@ -43,44 +44,76 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ text: text.substring(0, 10000) });
         }
 
-        // Handle quiz generation from text
-        const { text, difficulty, numQuestions, title } = await req.json();
+        // Handle JSON body (text-based or topic-based quiz generation)
+        const body = await req.json();
+        const { text, topic, difficulty, numQuestions, title, mode = "standard", source = "text" } = body;
 
-        if (!text || text.trim().length < 100) {
-            return NextResponse.json({ error: "Please provide at least 100 characters of text content" }, { status: 400 });
-        }
         if (!["easy", "medium", "hard"].includes(difficulty)) {
             return NextResponse.json({ error: "Invalid difficulty" }, { status: 400 });
         }
 
         const count = Math.min(Math.max(parseInt(numQuestions) || 10, 5), 20);
-        const questions = await generateQuizQuestions(text, difficulty, count);
+        let questions;
+        let sourceText: string;
+
+        // Topic-based quiz generation
+        if (source === "topic" && topic) {
+            const result = await generateTopicQuiz(topic, difficulty, count, mode);
+            questions = result.questions;
+            sourceText = result.generatedText || `Topic: ${topic}`;
+        } else {
+            // Text-based quiz generation
+            if (!text || text.trim().length < 100) {
+                return NextResponse.json({ error: "Please provide at least 100 characters of text content" }, { status: 400 });
+            }
+            questions = await generateQuizQuestions(text, difficulty, count, mode);
+            sourceText = text.substring(0, 10000);
+        }
 
         if (!questions || questions.length === 0) {
             return NextResponse.json({ error: "Failed to generate questions. Please try again." }, { status: 500 });
         }
 
-        const quiz = await prisma.quiz.create({
-            data: {
-                title: title || `Quiz - ${new Date().toLocaleDateString()}`,
+        // Create quiz in Supabase
+        const { data: quiz, error: quizError } = await supabase
+            .from("quizzes")
+            .insert({
+                title: title || (topic ? `${topic} Quiz` : `Quiz - ${new Date().toLocaleDateString()}`),
                 difficulty,
-                sourceText: text.substring(0, 10000),
-                userId: session.user.id,
-                questions: {
-                    create: questions.map((q, i) => ({
-                        questionText: q.questionText,
-                        optionA: q.optionA,
-                        optionB: q.optionB,
-                        optionC: q.optionC,
-                        optionD: q.optionD,
-                        correctAnswer: q.correctAnswer,
-                        explanation: q.explanation,
-                        order: i,
-                    })),
-                },
-            },
-            include: { questions: true },
-        });
+                mode,
+                source,
+                topic: topic || null,
+                source_text: sourceText,
+                user_id: session.user.id,
+            })
+            .select("id")
+            .single();
+
+        if (quizError || !quiz) {
+            console.error("Quiz create error:", quizError);
+            return NextResponse.json({ error: "Failed to save quiz" }, { status: 500 });
+        }
+
+        // Insert questions
+        const questionRows = questions.map((q, i) => ({
+            quiz_id: quiz.id,
+            question_text: q.questionText,
+            option_a: q.optionA,
+            option_b: q.optionB,
+            option_c: q.optionC,
+            option_d: q.optionD,
+            correct_answer: q.correctAnswer,
+            explanation: q.explanation,
+            difficulty: q.difficulty || difficulty,
+            sort_order: i,
+        }));
+
+        const { error: qError } = await supabase.from("questions").insert(questionRows);
+
+        if (qError) {
+            console.error("Questions insert error:", qError);
+            return NextResponse.json({ error: "Failed to save questions" }, { status: 500 });
+        }
 
         return NextResponse.json({ quizId: quiz.id }, { status: 201 });
     } catch (error) {
@@ -103,19 +136,47 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Quiz ID required" }, { status: 400 });
         }
 
-        const quiz = await prisma.quiz.findUnique({
-            where: { id },
-            include: {
-                questions: { orderBy: { order: "asc" } },
-                user: { select: { name: true, email: true } },
-            },
-        });
+        const { data: quiz, error } = await supabase
+            .from("quizzes")
+            .select("*")
+            .eq("id", id)
+            .single();
 
-        if (!quiz) {
+        if (error || !quiz) {
             return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
         }
 
-        return NextResponse.json(quiz);
+        const { data: questions } = await supabase
+            .from("questions")
+            .select("*")
+            .eq("quiz_id", id)
+            .order("sort_order", { ascending: true });
+
+        // Map snake_case → camelCase for frontend
+        const mapped = {
+            id: quiz.id,
+            title: quiz.title,
+            difficulty: quiz.difficulty,
+            mode: quiz.mode,
+            source: quiz.source,
+            topic: quiz.topic,
+            sourceText: quiz.source_text,
+            createdAt: quiz.created_at,
+            questions: (questions || []).map((q: Record<string, unknown>) => ({
+                id: q.id,
+                questionText: q.question_text,
+                optionA: q.option_a,
+                optionB: q.option_b,
+                optionC: q.option_c,
+                optionD: q.option_d,
+                correctAnswer: q.correct_answer,
+                explanation: q.explanation,
+                difficulty: q.difficulty,
+                order: q.sort_order,
+            })),
+        };
+
+        return NextResponse.json(mapped);
     } catch (error) {
         console.error("Get quiz error:", error);
         return NextResponse.json({ error: "Failed to fetch quiz" }, { status: 500 });

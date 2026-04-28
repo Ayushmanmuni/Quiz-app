@@ -13,6 +13,7 @@ interface Question {
     optionD: string;
     correctAnswer: string;
     explanation: string;
+    difficulty: string;
     order: number;
 }
 
@@ -20,6 +21,7 @@ interface Quiz {
     id: string;
     title: string;
     difficulty: string;
+    mode: string;
     questions: Question[];
 }
 
@@ -31,18 +33,31 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     const [loading, setLoading] = useState(true);
     const [currentQ, setCurrentQ] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
-    const [submitted, setSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [studyPhase, setStudyPhase] = useState(true); // true = reading, false = quiz
+    const [adaptiveOrder, setAdaptiveOrder] = useState<number[]>([]);
 
     useEffect(() => {
         fetch(`/api/quiz?id=${id}`)
             .then((r) => r.json())
-            .then((data) => { setQuiz(data); setLoading(false); })
+            .then((data) => {
+                setQuiz(data);
+                setLoading(false);
+                if (data.mode === "adaptive" && data.questions?.length) {
+                    // Sort: start with medium, then adjust
+                    const easy = data.questions.filter((q: Question) => q.difficulty === "easy").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "easy")[i]));
+                    const med = data.questions.filter((q: Question) => q.difficulty === "medium").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "medium")[i]));
+                    const hard = data.questions.filter((q: Question) => q.difficulty === "hard").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "hard")[i]));
+                    // Interleave: med, then based on answers we pick from easy or hard
+                    setAdaptiveOrder([...med, ...easy, ...hard].slice(0, data.questions.length));
+                }
+                if (data.mode !== "study") setStudyPhase(false);
+            })
             .catch(() => setLoading(false));
     }, [id]);
 
     const handleSelect = (questionId: string, option: string) => {
-        if (submitted) return;
+        if (studyPhase) return;
         setAnswers((prev) => ({ ...prev, [questionId]: option }));
     };
 
@@ -67,35 +82,66 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         }
     };
 
-    if (!session) {
-        return (
-            <div style={{ textAlign: "center", padding: "120px 24px" }}>
-                <p style={{ color: "rgba(175,175,210,0.7)" }}>Please <a href="/login" style={{ color: "#6b8cff" }}>sign in</a> to take quizzes.</p>
-            </div>
-        );
-    }
+    if (!session) return <div style={{ textAlign: "center", padding: "120px 24px" }}><p style={{ color: "rgba(175,175,210,0.7)" }}>Please <a href="/login" style={{ color: "#6b8cff" }}>sign in</a> to take quizzes.</p></div>;
+    if (loading) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "calc(100vh - 72px)" }}><div style={{ textAlign: "center" }}><div className="spinner" style={{ margin: "0 auto 16px" }} /><p style={{ color: "rgba(175,175,210,0.7)" }}>Loading quiz...</p></div></div>;
+    if (!quiz || !quiz.questions?.length) return <div style={{ textAlign: "center", padding: "120px 24px" }}><p style={{ fontSize: "48px", marginBottom: "16px" }}>😕</p><p style={{ color: "rgba(175,175,210,0.7)", fontSize: "16px" }}>Quiz not found.</p></div>;
 
-    if (loading) {
+    // Study Mode: Study Phase
+    if (quiz.mode === "study" && studyPhase) {
         return (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "calc(100vh - 72px)" }}>
-                <div style={{ textAlign: "center" }}>
-                    <div className="spinner" style={{ margin: "0 auto 16px" }} />
-                    <p style={{ color: "rgba(175,175,210,0.7)" }}>Loading quiz...</p>
+            <div style={{ position: "relative", minHeight: "calc(100vh - 72px)" }}>
+                <div className="bg-mesh" />
+                <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto", padding: "40px 24px 60px" }}>
+                    <div className="glass-strong animate-slide-up" style={{ padding: "36px", marginBottom: "24px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
+                            <span style={{ fontSize: "28px" }}>📖</span>
+                            <div>
+                                <h1 style={{ fontSize: "24px", fontWeight: 800 }}>{quiz.title}</h1>
+                                <p style={{ color: "rgba(175,175,210,0.6)", fontSize: "14px" }}>Study Mode — Read the explanations first, then take the quiz</p>
+                            </div>
+                        </div>
+                        <div style={{ background: "rgba(79,110,247,0.06)", border: "1px solid rgba(79,110,247,0.15)", borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "14px", color: "rgba(175,175,210,0.8)" }}>
+                            💡 Read through each question and its explanation carefully. When you feel ready, click &quot;Start Quiz&quot; to test yourself.
+                        </div>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "32px" }}>
+                        {quiz.questions.map((q, i) => (
+                            <div key={q.id} className="glass animate-fade-in" style={{ padding: "24px" }}>
+                                <div style={{ fontSize: "12px", fontWeight: 600, color: "rgba(175,175,210,0.5)", marginBottom: "8px" }}>Question {i + 1} {q.difficulty !== "medium" && <span className={`badge badge-${q.difficulty}`} style={{ marginLeft: "8px", fontSize: "10px" }}>{q.difficulty}</span>}</div>
+                                <p style={{ fontSize: "16px", fontWeight: 600, color: "#f0f0ff", lineHeight: 1.6, marginBottom: "16px" }}>{q.questionText}</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
+                                    {(["A", "B", "C", "D"] as const).map((opt) => {
+                                        const optTexts: Record<string, string> = { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
+                                        const isCorrect = opt === q.correctAnswer;
+                                        return (
+                                            <div key={opt} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", borderRadius: "8px", border: `1px solid ${isCorrect ? "rgba(16,217,138,0.4)" : "rgba(255,255,255,0.06)"}`, background: isCorrect ? "rgba(16,217,138,0.08)" : "rgba(255,255,255,0.02)", fontSize: "14px", color: isCorrect ? "#10d98a" : "rgba(175,175,210,0.6)" }}>
+                                                <span style={{ width: "20px", fontWeight: 700 }}>{opt}.</span>
+                                                <span style={{ flex: 1 }}>{optTexts[opt]}</span>
+                                                {isCorrect && <span>✓</span>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div style={{ background: "rgba(79,110,247,0.06)", border: "1px solid rgba(79,110,247,0.15)", borderRadius: "10px", padding: "14px 16px", fontSize: "13px", color: "rgba(175,175,210,0.85)", lineHeight: 1.6 }}>
+                                    <span style={{ fontWeight: 700, color: "#6b8cff" }}>💡 Explanation: </span>{q.explanation}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button className="btn-primary" onClick={() => setStudyPhase(false)} style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "16px" }}>
+                        ✅ I&apos;ve studied — Start the Quiz!
+                    </button>
                 </div>
             </div>
         );
     }
 
-    if (!quiz || !quiz.questions?.length) {
-        return (
-            <div style={{ textAlign: "center", padding: "120px 24px" }}>
-                <p style={{ fontSize: "48px", marginBottom: "16px" }}>😕</p>
-                <p style={{ color: "rgba(175,175,210,0.7)", fontSize: "16px" }}>Quiz not found.</p>
-            </div>
-        );
-    }
-
-    const question = quiz.questions[currentQ];
+    // Quiz Phase (Standard, Adaptive, or Study after reading)
+    const qIndex = quiz.mode === "adaptive" && adaptiveOrder.length ? adaptiveOrder[currentQ] ?? currentQ : currentQ;
+    const question = quiz.questions[qIndex];
+    if (!question) return null;
     const progress = ((currentQ + 1) / quiz.questions.length) * 100;
     const answeredCount = Object.keys(answers).length;
     const allAnswered = answeredCount === quiz.questions.length;
@@ -112,6 +158,8 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                             <h1 style={{ fontSize: "22px", fontWeight: 800, marginBottom: "4px" }}>{quiz.title}</h1>
                             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                                 <span className={`badge badge-${quiz.difficulty}`}>{quiz.difficulty}</span>
+                                {quiz.mode !== "standard" && <span className="badge" style={{ background: "rgba(79,110,247,0.15)", color: "#6b8cff", border: "1px solid rgba(79,110,247,0.3)" }}>{quiz.mode === "study" ? "📖 Study" : "🎯 Adaptive"}</span>}
+                                {quiz.mode === "adaptive" && question.difficulty && <span className={`badge badge-${question.difficulty}`} style={{ fontSize: "10px" }}>{question.difficulty}</span>}
                                 <span style={{ color: "rgba(175,175,210,0.5)", fontSize: "13px" }}>{answeredCount}/{quiz.questions.length} answered</span>
                             </div>
                         </div>
@@ -152,11 +200,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                         <button className="btn-primary" onClick={handleNext} id="next-btn">Next →</button>
                     ) : (
                         <button className="btn-primary" onClick={handleSubmit} disabled={!allAnswered || submitting} style={{ opacity: !allAnswered ? 0.5 : 1, cursor: !allAnswered ? "not-allowed" : "pointer" }} id="submit-btn">
-                            {submitting ? (
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                    <div className="spinner" style={{ width: "16px", height: "16px", borderWidth: "2px" }} />Submitting...
-                                </div>
-                            ) : allAnswered ? "Submit Quiz ✓" : `Answer all (${quiz.questions.length - answeredCount} left)`}
+                            {submitting ? <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><div className="spinner" style={{ width: "16px", height: "16px", borderWidth: "2px" }} />Submitting...</div> : allAnswered ? "Submit Quiz ✓" : `Answer all (${quiz.questions.length - answeredCount} left)`}
                         </button>
                     )}
                 </div>
