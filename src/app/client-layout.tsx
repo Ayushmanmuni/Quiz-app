@@ -67,9 +67,7 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
         setNotes(getStored<string>("quizai_notes", ""));
     }, []);
 
-    useEffect(() => {
-        setStored("quizai_theme_pref", themePref);
-    }, [themePref]);
+    useEffect(() => { setStored("quizai_theme_pref", themePref); }, [themePref]);
 
     useEffect(() => {
         const mql = window.matchMedia?.("(prefers-color-scheme: light)");
@@ -86,7 +84,6 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
         apply();
         if (!mql) return;
         const onChange = () => apply();
-        // Safari fallback
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const anyMql = mql as any;
         if (anyMql.addEventListener) anyMql.addEventListener("change", onChange);
@@ -97,18 +94,9 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
         };
     }, [themePref]);
 
-    useEffect(() => {
-        setStored("quizai_difficulty", difficulty);
-    }, [difficulty]);
-
-    useEffect(() => {
-        setStored("quizai_settings_position", bubblePosition);
-    }, [bubblePosition]);
-
-    useEffect(() => {
-        setStored("quizai_settings_size", bubbleSize);
-    }, [bubbleSize]);
-
+    useEffect(() => { setStored("quizai_difficulty", difficulty); }, [difficulty]);
+    useEffect(() => { setStored("quizai_settings_position", bubblePosition); }, [bubblePosition]);
+    useEffect(() => { setStored("quizai_settings_size", bubbleSize); }, [bubbleSize]);
     useEffect(() => {
         const t = window.setTimeout(() => setStored("quizai_notes", notes), 250);
         return () => window.clearTimeout(t);
@@ -137,20 +125,15 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
     const floatingPositionStyle = useMemo(() => {
         const inset = 16;
         switch (bubblePosition) {
-            case "bottom-left":
-                return { left: inset, bottom: inset };
-            case "bottom-right":
-                return { right: inset, bottom: inset };
-            case "top-left":
-                return { left: inset, top: inset };
-            case "top-right":
-                return { right: inset, top: inset };
+            case "bottom-left":  return { left: inset, bottom: inset };
+            case "bottom-right": return { right: inset, bottom: inset };
+            case "top-left":     return { left: inset, top: inset };
+            case "top-right":    return { right: inset, top: inset };
         }
     }, [bubblePosition]);
 
     const panelPlacementStyle = useMemo(() => {
         if (variant !== "floating") return { right: 0, top: "calc(100% + 10px)" } as const;
-        // open inward from the corner
         const gap = 12;
         if (bubblePosition.startsWith("bottom")) {
             return {
@@ -180,9 +163,9 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                         width: bubbleMetrics.px,
                         height: bubbleMetrics.px,
                         borderRadius: 999,
-                        background: "rgba(0,0,0,0.35)",
-                        border: "1px solid rgba(255,255,255,0.10)",
-                        boxShadow: "0 16px 50px rgba(0,0,0,0.45)",
+                        background: "linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.2))",
+                        border: "1.5px solid rgba(139,92,246,0.4)",
+                        boxShadow: "0 8px 30px rgba(139,92,246,0.35)",
                         backdropFilter: "blur(10px)",
                         WebkitBackdropFilter: "blur(10px)",
                         color: "var(--text-primary)",
@@ -191,6 +174,7 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: bubbleMetrics.font,
+                        transition: "all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
                     }}
                     aria-haspopup="menu"
                     aria-expanded={open}
@@ -202,14 +186,7 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                 <button
                     onClick={() => setOpen((v) => !v)}
                     className="btn-secondary"
-                    style={{
-                        padding: "9px 14px",
-                        borderRadius: "12px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        fontSize: "14px",
-                    }}
+                    style={{ padding: "9px 14px", borderRadius: "999px", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "14px" }}
                     aria-haspopup="menu"
                     aria-expanded={open}
                     title="Settings"
@@ -229,7 +206,7 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                         ...panelPlacementStyle,
                         width: "360px",
                         padding: bubbleMetrics.pad,
-                        boxShadow: "0 40px 120px rgba(0,0,0,0.45)",
+                        boxShadow: "0 40px 120px rgba(0,0,0,0.45), 0 0 40px rgba(139,92,246,0.1)",
                         zIndex: 200,
                         color: "var(--text-primary)",
                     }}
@@ -243,39 +220,15 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                         </div>
                         {session ? (
                             <button
-                                onClick={() => {
-                                    setOpen(false);
-                                    signOut({ callbackUrl: "/" });
-                                }}
-                                style={{
-                                    background: "rgba(255, 77, 109, 0.12)",
-                                    border: "1px solid rgba(255, 77, 109, 0.25)",
-                                    color: "rgba(255, 77, 109, 0.95)",
-                                    padding: "8px 12px",
-                                    borderRadius: "10px",
-                                    cursor: "pointer",
-                                    fontWeight: 700,
-                                    fontSize: "12px",
-                                }}
+                                onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
+                                style={{ background: "rgba(248,113,113,0.12)", border: "1.5px solid rgba(248,113,113,0.3)", color: "#F87171", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
                             >
                                 Logout
                             </button>
                         ) : (
                             <button
-                                onClick={() => {
-                                    setOpen(false);
-                                    signIn(undefined, { callbackUrl: "/dashboard" });
-                                }}
-                                style={{
-                                    background: "rgba(16, 217, 138, 0.12)",
-                                    border: "1px solid rgba(16, 217, 138, 0.25)",
-                                    color: "rgba(16, 217, 138, 0.95)",
-                                    padding: "8px 12px",
-                                    borderRadius: "10px",
-                                    cursor: "pointer",
-                                    fontWeight: 700,
-                                    fontSize: "12px",
-                                }}
+                                onClick={() => { setOpen(false); signIn(undefined, { callbackUrl: "/dashboard" }); }}
+                                style={{ background: "rgba(52,211,153,0.12)", border: "1.5px solid rgba(52,211,153,0.3)", color: "#34D399", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
                             >
                                 Login
                             </button>
@@ -284,153 +237,60 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
 
                     <div className="divider" style={{ margin: "12px 0" }} />
 
-                    {/* Preferences (like Next DevTools UI) */}
                     <div style={{ marginBottom: "14px" }}>
                         <div style={{ fontWeight: 900, fontSize: "15px", marginBottom: "10px" }}>Preferences</div>
 
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 0" }}>
-                            <div>
-                                <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>Theme</div>
-                                <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Select your theme preference.</div>
+                        {[
+                            { label: "Theme", desc: "Select your theme preference.", value: themePref, onChange: (v: string) => setThemePref(v as ThemePref), options: [{ value: "system", label: "System" }, { value: "dark", label: "Dark" }, { value: "light", label: "Light" }] },
+                            { label: "Position", desc: "Adjust the placement of your tools.", value: bubblePosition, onChange: (v: string) => setBubblePosition(v as BubblePosition), options: [{ value: "bottom-left", label: "Bottom Left" }, { value: "bottom-right", label: "Bottom Right" }, { value: "top-left", label: "Top Left" }, { value: "top-right", label: "Top Right" }] },
+                            { label: "Size", desc: "Adjust the size of the tools.", value: bubbleSize, onChange: (v: string) => setBubbleSize(v as BubbleSize), options: [{ value: "small", label: "Small" }, { value: "medium", label: "Medium" }, { value: "large", label: "Large" }] },
+                        ].map((pref) => (
+                            <div key={pref.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 0" }}>
+                                <div>
+                                    <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{pref.label}</div>
+                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{pref.desc}</div>
+                                </div>
+                                <select
+                                    value={pref.value}
+                                    onChange={(e) => pref.onChange(e.target.value)}
+                                    className="input-field"
+                                    style={{ width: 140, padding: "10px 12px", fontSize: "13px", background: "var(--bg-secondary)", color: "var(--text-primary)", borderColor: "var(--border-color)", colorScheme: resolvedTheme }}
+                                >
+                                    {pref.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
                             </div>
-                            <select
-                                value={themePref}
-                                onChange={(e) => setThemePref(e.target.value as ThemePref)}
-                                className="input-field"
-                                style={{
-                                    width: 140,
-                                    padding: "10px 12px",
-                                    fontSize: "13px",
-                                    background: "var(--bg-secondary)",
-                                    color: "var(--text-primary)",
-                                    borderColor: "var(--border-color)",
-                                    colorScheme: resolvedTheme,
-                                }}
-                                aria-label="Theme preference"
-                            >
-                                <option value="system">System</option>
-                                <option value="dark">Dark</option>
-                                <option value="light">Light</option>
-                            </select>
-                        </div>
-
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 0" }}>
-                            <div>
-                                <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>Position</div>
-                                <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Adjust the placement of your tools.</div>
-                            </div>
-                            <select
-                                value={bubblePosition}
-                                onChange={(e) => setBubblePosition(e.target.value as BubblePosition)}
-                                className="input-field"
-                                style={{
-                                    width: 140,
-                                    padding: "10px 12px",
-                                    fontSize: "13px",
-                                    background: "var(--bg-secondary)",
-                                    color: "var(--text-primary)",
-                                    borderColor: "var(--border-color)",
-                                    colorScheme: resolvedTheme,
-                                }}
-                                aria-label="Bubble position"
-                            >
-                                <option value="bottom-left">Bottom Left</option>
-                                <option value="bottom-right">Bottom Right</option>
-                                <option value="top-left">Top Left</option>
-                                <option value="top-right">Top Right</option>
-                            </select>
-                        </div>
-
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 0" }}>
-                            <div>
-                                <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>Size</div>
-                                <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Adjust the size of the tools.</div>
-                            </div>
-                            <select
-                                value={bubbleSize}
-                                onChange={(e) => setBubbleSize(e.target.value as BubbleSize)}
-                                className="input-field"
-                                style={{
-                                    width: 140,
-                                    padding: "10px 12px",
-                                    fontSize: "13px",
-                                    background: "var(--bg-secondary)",
-                                    color: "var(--text-primary)",
-                                    borderColor: "var(--border-color)",
-                                    colorScheme: resolvedTheme,
-                                }}
-                                aria-label="Bubble size"
-                            >
-                                <option value="small">Small</option>
-                                <option value="medium">Medium</option>
-                                <option value="large">Large</option>
-                            </select>
-                        </div>
+                        ))}
                     </div>
 
                     <div className="divider" style={{ margin: "12px 0" }} />
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "14px" }}>
-                        <button onClick={() => go("/dashboard")} className="btn-secondary" style={{ padding: "10px 12px", fontSize: "13px", justifyContent: "center" }}>
-                            📈 Progress
-                        </button>
-                        <button onClick={() => go("/upload")} className="btn-primary" style={{ padding: "10px 12px", fontSize: "13px", justifyContent: "center" }}>
-                            + New Quiz
-                        </button>
+                        <button onClick={() => go("/dashboard")} className="btn-secondary" style={{ padding: "10px 12px", fontSize: "13px", justifyContent: "center" }}>📈 Progress</button>
+                        <button onClick={() => go("/upload")} className="btn-primary" style={{ padding: "10px 12px", fontSize: "13px", justifyContent: "center" }}>+ New Quiz</button>
                     </div>
 
                     <div style={{ marginBottom: "14px" }}>
                         <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "6px" }}>Default difficulty</div>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
-                            {(
-                                [
-                                    { value: "easy", label: "Easy", icon: "🟢" },
-                                    { value: "medium", label: "Medium", icon: "🟡" },
-                                    { value: "hard", label: "Hard", icon: "🔴" },
-                                ] as const
-                            ).map((d) => (
+                            {([{ value: "easy", label: "Easy", icon: "🟢", color: "rgba(52,211,153," }, { value: "medium", label: "Medium", icon: "🟡", color: "rgba(251,191,36," }, { value: "hard", label: "Hard", icon: "🔴", color: "rgba(248,113,113," }] as const).map((d) => (
                                 <button
                                     key={d.value}
                                     onClick={() => setDifficulty(d.value)}
-                                    style={{
-                                        padding: "10px 10px",
-                                        borderRadius: "12px",
-                                        cursor: "pointer",
-                                        border: `1px solid ${difficulty === d.value ? "rgba(79,110,247,0.55)" : "rgba(255,255,255,0.10)"}`,
-                                        background: difficulty === d.value ? "rgba(79,110,247,0.14)" : "rgba(255,255,255,0.03)",
-                                        color: difficulty === d.value ? "var(--accent-light)" : "var(--text-primary)",
-                                        fontWeight: 800,
-                                        fontSize: "12px",
-                                    }}
+                                    style={{ padding: "10px", borderRadius: "12px", cursor: "pointer", border: `1.5px solid ${difficulty === d.value ? d.color + "0.55)" : "rgba(255,255,255,0.08)"}`, background: difficulty === d.value ? d.color + "0.12)" : "rgba(255,255,255,0.03)", color: difficulty === d.value ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
                                 >
-                                    <span style={{ marginRight: "6px" }}>{d.icon}</span>
-                                    {d.label}
+                                    <span style={{ marginRight: "5px" }}>{d.icon}</span>{d.label}
                                 </button>
                             ))}
                         </div>
                         <div style={{ marginTop: "6px", fontSize: "11px", color: "var(--text-secondary)" }}>
-                            Current theme: <span style={{ fontWeight: 800 }}>{resolvedTheme}</span>
+                            Current theme: <span style={{ fontWeight: 800, color: "var(--accent-light)" }}>{resolvedTheme}</span>
                         </div>
                     </div>
 
                     <div>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "6px" }}>
                             <div style={{ fontWeight: 800, fontSize: "14px" }}>Quick notes</div>
-                            <button
-                                onClick={() => setNotes("")}
-                                style={{
-                                    background: "transparent",
-                                    border: "1px solid rgba(255,255,255,0.10)",
-                                    color: "rgba(175,175,210,0.8)",
-                                    borderRadius: "10px",
-                                    padding: "6px 10px",
-                                    cursor: "pointer",
-                                    fontSize: "12px",
-                                    fontWeight: 700,
-                                }}
-                            >
-                                Clear
-                            </button>
+                            <button onClick={() => setNotes("")} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-secondary)", borderRadius: "999px", padding: "5px 10px", cursor: "pointer", fontSize: "12px", fontWeight: 700, fontFamily: "Nunito, sans-serif" }}>Clear</button>
                         </div>
                         <textarea
                             value={notes}
@@ -454,14 +314,14 @@ function Navbar() {
     return (
         <nav
             style={{
-                background: "rgba(5, 5, 15, 0.85)",
+                background: "var(--panel-bg)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+                borderBottom: "1px solid var(--panel-border)",
                 position: "sticky",
                 top: 0,
                 zIndex: 100,
-                height: "72px",
+                height: "70px",
             }}
         >
             <div
@@ -479,27 +339,28 @@ function Navbar() {
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div
                             style={{
-                                width: "36px",
-                                height: "36px",
-                                borderRadius: "10px",
-                                background: "linear-gradient(135deg, #4f6ef7, #a78bfa)",
+                                width: "38px",
+                                height: "38px",
+                                borderRadius: "12px",
+                                background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                fontSize: "18px",
-                                boxShadow: "0 0 20px rgba(79, 110, 247, 0.4)",
+                                fontSize: "20px",
+                                boxShadow: "0 0 22px rgba(139, 92, 246, 0.5)",
                             }}
                         >
-                            ⚡
+                            🧠
                         </div>
                         <span
                             style={{
-                                fontSize: "20px",
-                                fontWeight: 800,
-                                background: "linear-gradient(135deg, #6b8cff, #a78bfa)",
+                                fontSize: "21px",
+                                fontWeight: 900,
+                                background: "linear-gradient(135deg, #A78BFA, #F472B6)",
                                 WebkitBackgroundClip: "text",
                                 WebkitTextFillColor: "transparent",
                                 backgroundClip: "text",
+                                letterSpacing: "-0.3px",
                             }}
                         >
                             QuizAI
@@ -515,24 +376,25 @@ function Navbar() {
                                     style={{
                                         background: "transparent",
                                         border: "none",
-                                        color: "rgba(240, 240, 255, 0.7)",
-                                        padding: "8px 16px",
-                                        borderRadius: "8px",
+                                        color: "var(--text-secondary)",
+                                        padding: "8px 18px",
+                                        borderRadius: "999px",
                                         cursor: "pointer",
                                         fontSize: "14px",
-                                        fontWeight: 500,
+                                        fontWeight: 700,
+                                        fontFamily: "Nunito, sans-serif",
                                         transition: "all 0.2s ease",
                                     }}
                                     onMouseEnter={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "#f0f0ff";
-                                        (e.target as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)";
+                                        (e.target as HTMLButtonElement).style.color = "var(--text-primary)";
+                                        (e.target as HTMLButtonElement).style.background = "rgba(139,92,246,0.1)";
                                     }}
                                     onMouseLeave={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "rgba(240, 240, 255, 0.7)";
+                                        (e.target as HTMLButtonElement).style.color = "var(--text-secondary)";
                                         (e.target as HTMLButtonElement).style.background = "transparent";
                                     }}
                                 >
-                                    + New Quiz
+                                    ✨ New Quiz
                                 </button>
                             </Link>
                             <Link href="/dashboard" style={{ textDecoration: "none" }}>
@@ -540,24 +402,25 @@ function Navbar() {
                                     style={{
                                         background: "transparent",
                                         border: "none",
-                                        color: "rgba(240, 240, 255, 0.7)",
-                                        padding: "8px 16px",
-                                        borderRadius: "8px",
+                                        color: "var(--text-secondary)",
+                                        padding: "8px 18px",
+                                        borderRadius: "999px",
                                         cursor: "pointer",
                                         fontSize: "14px",
-                                        fontWeight: 500,
+                                        fontWeight: 700,
+                                        fontFamily: "Nunito, sans-serif",
                                         transition: "all 0.2s ease",
                                     }}
                                     onMouseEnter={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "#f0f0ff";
-                                        (e.target as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)";
+                                        (e.target as HTMLButtonElement).style.color = "var(--text-primary)";
+                                        (e.target as HTMLButtonElement).style.background = "rgba(139,92,246,0.1)";
                                     }}
                                     onMouseLeave={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "rgba(240, 240, 255, 0.7)";
+                                        (e.target as HTMLButtonElement).style.color = "var(--text-secondary)";
                                         (e.target as HTMLButtonElement).style.background = "transparent";
                                     }}
                                 >
-                                    Dashboard
+                                    📊 Dashboard
                                 </button>
                             </Link>
                             <div
@@ -565,11 +428,11 @@ function Navbar() {
                                     display: "flex",
                                     alignItems: "center",
                                     gap: "10px",
-                                    marginLeft: "8px",
+                                    marginLeft: "6px",
                                     padding: "6px 14px",
-                                    background: "rgba(255, 255, 255, 0.04)",
-                                    border: "1px solid rgba(255,255,255,0.08)",
-                                    borderRadius: "10px",
+                                    background: "rgba(139, 92, 246, 0.08)",
+                                    border: "1.5px solid rgba(139,92,246,0.25)",
+                                    borderRadius: "999px",
                                 }}
                             >
                                 <div
@@ -577,18 +440,18 @@ function Navbar() {
                                         width: "28px",
                                         height: "28px",
                                         borderRadius: "50%",
-                                        background: "linear-gradient(135deg, #4f6ef7, #a78bfa)",
+                                        background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
                                         fontSize: "12px",
-                                        fontWeight: 700,
+                                        fontWeight: 800,
                                         color: "white",
                                     }}
                                 >
                                     {session.user?.name?.[0]?.toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
                                 </div>
-                                <span style={{ fontSize: "13px", color: "rgba(240,240,255,0.8)", maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                     {session.user?.name || session.user?.email}
                                 </span>
                             </div>
@@ -596,13 +459,13 @@ function Navbar() {
                     ) : (
                         <>
                             <Link href="/login" style={{ textDecoration: "none" }}>
-                                <button className="btn-secondary" style={{ padding: "9px 20px", fontSize: "14px" }}>
+                                <button className="btn-secondary" style={{ padding: "9px 22px", fontSize: "14px" }}>
                                     Sign In
                                 </button>
                             </Link>
                             <Link href="/register" style={{ textDecoration: "none" }}>
-                                <button className="btn-primary" style={{ padding: "9px 20px", fontSize: "14px" }}>
-                                    Get Started
+                                <button className="btn-primary" style={{ padding: "9px 22px", fontSize: "14px" }}>
+                                    🚀 Get Started
                                 </button>
                             </Link>
                         </>

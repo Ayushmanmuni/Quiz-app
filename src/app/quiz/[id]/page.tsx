@@ -26,6 +26,9 @@ interface Quiz {
     questions: Question[];
 }
 
+const OPT_CLASSES: Record<string, string> = { A: "option-btn option-btn-a", B: "option-btn option-btn-b", C: "option-btn option-btn-c", D: "option-btn option-btn-d" };
+const BADGE_CLASSES: Record<string, string> = { A: "opt-badge opt-badge-a", B: "opt-badge opt-badge-b", C: "opt-badge opt-badge-c", D: "opt-badge opt-badge-d" };
+
 export default function QuizPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const { data: session } = useSession();
@@ -35,7 +38,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     const [currentQ, setCurrentQ] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
-    const [studyPhase, setStudyPhase] = useState(true); // true = reading, false = quiz
+    const [studyPhase, setStudyPhase] = useState(true);
     const [adaptiveOrder, setAdaptiveOrder] = useState<number[]>([]);
 
     useEffect(() => {
@@ -45,11 +48,9 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                 setQuiz(data);
                 setLoading(false);
                 if (data.mode === "adaptive" && data.questions?.length) {
-                    // Sort: start with medium, then adjust
                     const easy = data.questions.filter((q: Question) => q.difficulty === "easy").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "easy")[i]));
-                    const med = data.questions.filter((q: Question) => q.difficulty === "medium").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "medium")[i]));
+                    const med  = data.questions.filter((q: Question) => q.difficulty === "medium").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "medium")[i]));
                     const hard = data.questions.filter((q: Question) => q.difficulty === "hard").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "hard")[i]));
-                    // Interleave: med, then based on answers we pick from easy or hard
                     setAdaptiveOrder([...med, ...easy, ...hard].slice(0, data.questions.length));
                 }
                 if (data.mode !== "study") setStudyPhase(false);
@@ -69,13 +70,11 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         if (!quiz) return;
         setSubmitting(true);
         const score = quiz.questions.filter((q) => answers[q.id] === q.correctAnswer).length;
-
         const res = await fetch("/api/attempt", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ quizId: quiz.id, answers, score, totalQuestions: quiz.questions.length }),
         });
-
         setSubmitting(false);
         if (res.ok) {
             const data = await res.json();
@@ -83,43 +82,62 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         }
     };
 
-    if (!session) return <div style={{ textAlign: "center", padding: "120px 24px" }}><p style={{ color: "rgba(175,175,210,0.7)" }}>Please <a href="/login" style={{ color: "#6b8cff" }}>sign in</a> to take quizzes.</p></div>;
-    if (loading) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "calc(100vh - 72px)" }}><div style={{ textAlign: "center" }}><div className="spinner" style={{ margin: "0 auto 16px" }} /><p style={{ color: "rgba(175,175,210,0.7)" }}>Loading quiz...</p></div></div>;
-    if (!quiz || !quiz.questions?.length) return <div style={{ textAlign: "center", padding: "120px 24px" }}><p style={{ fontSize: "48px", marginBottom: "16px" }}>😕</p><p style={{ color: "rgba(175,175,210,0.7)", fontSize: "16px" }}>Quiz not found.</p></div>;
+    if (!session) return (
+        <div style={{ textAlign: "center", padding: "120px 24px" }}>
+            <div style={{ fontSize: "60px", marginBottom: "16px" }}>🔐</div>
+            <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: 600 }}>
+                Please <a href="/login" style={{ color: "var(--accent-light)", fontWeight: 800 }}>sign in</a> to take quizzes.
+            </p>
+        </div>
+    );
+
+    if (loading) return (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "calc(100vh - 70px)" }}>
+            <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "48px", marginBottom: "16px" }} className="animate-wiggle">🧠</div>
+                <div className="spinner" style={{ margin: "0 auto 16px" }} />
+                <p style={{ color: "var(--text-secondary)", fontWeight: 600 }}>Loading quiz...</p>
+            </div>
+        </div>
+    );
+
+    if (!quiz || !quiz.questions?.length) return (
+        <div style={{ textAlign: "center", padding: "120px 24px" }}>
+            <p style={{ fontSize: "52px", marginBottom: "16px" }}>😕</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: 600 }}>Quiz not found.</p>
+        </div>
+    );
 
     // Study Mode: Study Phase
     if (quiz.mode === "study" && studyPhase) {
         return (
-            <div style={{ position: "relative", minHeight: "calc(100vh - 72px)" }}>
+            <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
                 <div className="bg-mesh" />
                 <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto", padding: "40px 24px 60px" }}>
                     <div className="glass-strong animate-slide-up" style={{ padding: "36px", marginBottom: "24px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
-                            <span style={{ fontSize: "28px" }}>📖</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "24px" }}>
+                            <div className="icon-circle icon-circle-sky">📖</div>
                             <div>
-                                <h1 style={{ fontSize: "24px", fontWeight: 800 }}>{quiz.title}</h1>
-                                <p style={{ color: "rgba(175,175,210,0.6)", fontSize: "14px" }}>Study Mode — Read the abstract first, then take the quiz</p>
+                                <h1 style={{ fontSize: "24px", fontWeight: 900 }}>{quiz.title}</h1>
+                                <p style={{ color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600 }}>Study Mode — Read the abstract first, then take the quiz</p>
                             </div>
                         </div>
-                        <div style={{ background: "rgba(79,110,247,0.06)", border: "1px solid rgba(79,110,247,0.15)", borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "14px", color: "rgba(175,175,210,0.8)" }}>
+                        <div style={{ background: "rgba(139, 92, 246, 0.07)", border: "1px solid rgba(139, 92, 246, 0.2)", borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "14px", color: "var(--text-secondary)", fontWeight: 600 }}>
                             💡 Read through the summary below carefully. When you feel ready, click &quot;Start Quiz&quot; to test yourself.
                         </div>
                     </div>
-
-                    <div className="glass animate-fade-in" style={{ padding: "32px", marginBottom: "32px", fontSize: "16px", lineHeight: "1.8", color: "#f0f0ff", whiteSpace: "pre-wrap" }}>
-                        <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "16px", color: "#6b8cff" }}>Topic Abstract</h2>
+                    <div className="glass animate-fade-in" style={{ padding: "32px", marginBottom: "32px", fontSize: "16px", lineHeight: "1.8", color: "var(--text-primary)", whiteSpace: "pre-wrap", fontWeight: 500 }}>
+                        <h2 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "16px", color: "var(--accent-light)" }}>📚 Topic Abstract</h2>
                         {quiz.sourceText || "No abstract available for this topic."}
                     </div>
-
-                    <button className="btn-primary" onClick={() => setStudyPhase(false)} style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "16px" }}>
-                        ✅ I&apos;ve studied — Start the Quiz!
+                    <button className="btn-primary" onClick={() => setStudyPhase(false)} style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "17px" }}>
+                        ✅ I&apos;ve studied — Start the Quiz! 🚀
                     </button>
                 </div>
             </div>
         );
     }
 
-    // Quiz Phase (Standard, Adaptive, or Study after reading)
     const qIndex = quiz.mode === "adaptive" && adaptiveOrder.length ? adaptiveOrder[currentQ] ?? currentQ : currentQ;
     const question = quiz.questions[qIndex];
     if (!question) return null;
@@ -129,59 +147,107 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     const OPTIONS = ["A", "B", "C", "D"] as const;
     const optionTexts: Record<string, string> = { A: question.optionA, B: question.optionB, C: question.optionC, D: question.optionD };
 
+    const dotColors: Record<string, string> = { A: "#38BDF8", B: "#FBBF24", C: "#F87171", D: "#34D399" };
+
     return (
-        <div style={{ position: "relative", minHeight: "calc(100vh - 72px)" }}>
+        <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, maxWidth: "750px", margin: "0 auto", padding: "40px 24px 60px" }}>
+
+                {/* Header */}
                 <div style={{ marginBottom: "32px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
                         <div>
-                            <h1 style={{ fontSize: "22px", fontWeight: 800, marginBottom: "4px" }}>{quiz.title}</h1>
-                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                            <h1 style={{ fontSize: "20px", fontWeight: 900, marginBottom: "6px" }}>{quiz.title}</h1>
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
                                 <span className={`badge badge-${quiz.difficulty}`}>{quiz.difficulty}</span>
-                                {quiz.mode !== "standard" && <span className="badge" style={{ background: "rgba(79,110,247,0.15)", color: "#6b8cff", border: "1px solid rgba(79,110,247,0.3)" }}>{quiz.mode === "study" ? "📖 Study" : "🎯 Adaptive"}</span>}
-                                {quiz.mode === "adaptive" && question.difficulty && <span className={`badge badge-${question.difficulty}`} style={{ fontSize: "10px" }}>{question.difficulty}</span>}
-                                <span style={{ color: "rgba(175,175,210,0.5)", fontSize: "13px" }}>{answeredCount}/{quiz.questions.length} answered</span>
+                                {quiz.mode !== "standard" && (
+                                    <span className="badge" style={{ background: "rgba(139,92,246,0.15)", color: "var(--accent-light)", border: "1.5px solid rgba(139,92,246,0.3)" }}>
+                                        {quiz.mode === "study" ? "📖 Study" : "🎯 Adaptive"}
+                                    </span>
+                                )}
+                                <span style={{ color: "var(--text-secondary)", fontSize: "13px", fontWeight: 600 }}>{answeredCount}/{quiz.questions.length} answered</span>
                             </div>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                            <div style={{ fontSize: "28px", fontWeight: 800, color: "#6b8cff" }}>
-                                {currentQ + 1}<span style={{ fontSize: "16px", fontWeight: 400, color: "rgba(175,175,210,0.5)" }}>/{quiz.questions.length}</span>
+                            <div style={{ fontSize: "32px", fontWeight: 900 }}>
+                                <span className="gradient-text">{currentQ + 1}</span>
+                                <span style={{ fontSize: "16px", fontWeight: 600, color: "var(--text-secondary)" }}>/{quiz.questions.length}</span>
                             </div>
                         </div>
                     </div>
                     <div className="progress-bar"><div className="progress-fill" style={{ width: `${progress}%` }} /></div>
                 </div>
 
+                {/* Question Card */}
                 <div className="glass-strong animate-fade-in" key={currentQ} style={{ padding: "36px", marginBottom: "20px" }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(79, 110, 247, 0.1)", border: "1px solid rgba(79, 110, 247, 0.25)", borderRadius: "8px", padding: "4px 12px", fontSize: "12px", fontWeight: 600, color: "#6b8cff", marginBottom: "20px" }}>Question {currentQ + 1}</div>
-                    <p style={{ fontSize: "18px", fontWeight: 600, lineHeight: 1.6, marginBottom: "28px", color: "#f0f0ff" }}>{question.questionText}</p>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(139, 92, 246, 0.12)", border: "1.5px solid rgba(139, 92, 246, 0.3)", borderRadius: "999px", padding: "5px 14px", fontSize: "12px", fontWeight: 800, color: "var(--accent-light)", marginBottom: "20px" }}>
+                        ❓ Question {currentQ + 1}
+                    </div>
+                    <p style={{ fontSize: "18px", fontWeight: 700, lineHeight: 1.6, marginBottom: "28px", color: "var(--text-primary)" }}>{question.questionText}</p>
+
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                         {OPTIONS.map((opt) => {
                             const isSelected = answers[question.id] === opt;
                             return (
-                                <button key={opt} className={`option-btn${isSelected ? " selected" : ""}`} onClick={() => handleSelect(question.id, opt)} id={`option-${opt.toLowerCase()}`}>
-                                    <span style={{ width: "32px", height: "32px", borderRadius: "50%", background: isSelected ? "rgba(79, 110, 247, 0.3)" : "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, flexShrink: 0, border: isSelected ? "1px solid rgba(79, 110, 247, 0.5)" : "1px solid rgba(255,255,255,0.08)", color: isSelected ? "#6b8cff" : "rgba(175,175,210,0.7)" }}>{opt}</span>
-                                    <span style={{ flex: 1, fontSize: "15px" }}>{optionTexts[opt]}</span>
-                                    {isSelected && <span style={{ color: "#6b8cff" }}>●</span>}
+                                <button
+                                    key={opt}
+                                    className={`${OPT_CLASSES[opt]}${isSelected ? " selected" : ""}`}
+                                    onClick={() => handleSelect(question.id, opt)}
+                                    id={`option-${opt.toLowerCase()}`}
+                                >
+                                    <span className={BADGE_CLASSES[opt]}>{opt}</span>
+                                    <span style={{ flex: 1, fontSize: "15px", fontWeight: 600 }}>{optionTexts[opt]}</span>
+                                    {isSelected && <span style={{ color: dotColors[opt], fontSize: "18px" }}>●</span>}
                                 </button>
                             );
                         })}
                     </div>
                 </div>
 
+                {/* Navigation */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
-                    <button className="btn-secondary" onClick={handlePrev} disabled={currentQ === 0} style={{ opacity: currentQ === 0 ? 0.3 : 1, cursor: currentQ === 0 ? "not-allowed" : "pointer" }} id="prev-btn">← Previous</button>
+                    <button
+                        className="btn-secondary"
+                        onClick={handlePrev}
+                        disabled={currentQ === 0}
+                        style={{ opacity: currentQ === 0 ? 0.3 : 1, cursor: currentQ === 0 ? "not-allowed" : "pointer" }}
+                        id="prev-btn"
+                    >
+                        ← Prev
+                    </button>
+
+                    {/* Dot navigator */}
                     <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center" }}>
-                        {quiz.questions.map((q, i) => (
-                            <button key={i} onClick={() => setCurrentQ(i)} style={{ width: "10px", height: "10px", borderRadius: "50%", border: "none", cursor: "pointer", background: i === currentQ ? "#4f6ef7" : answers[q.id] ? "rgba(16, 217, 138, 0.6)" : "rgba(255,255,255,0.12)", transition: "all 0.2s ease", transform: i === currentQ ? "scale(1.3)" : "scale(1)" }} />
-                        ))}
+                        {quiz.questions.map((q, i) => {
+                            const ansOpt = answers[q.id] as keyof typeof dotColors | undefined;
+                            const dotColor = i === currentQ ? "var(--accent)" : ansOpt ? dotColors[ansOpt] : "rgba(255,255,255,0.15)";
+                            return (
+                                <button
+                                    key={i}
+                                    onClick={() => setCurrentQ(i)}
+                                    style={{ width: "10px", height: "10px", borderRadius: "50%", border: "none", cursor: "pointer", background: dotColor, transition: "all 0.2s ease", transform: i === currentQ ? "scale(1.4)" : "scale(1)", padding: 0 }}
+                                    aria-label={`Go to question ${i + 1}`}
+                                />
+                            );
+                        })}
                     </div>
+
                     {currentQ < quiz.questions.length - 1 ? (
                         <button className="btn-primary" onClick={handleNext} id="next-btn">Next →</button>
                     ) : (
-                        <button className="btn-primary" onClick={handleSubmit} disabled={!allAnswered || submitting} style={{ opacity: !allAnswered ? 0.5 : 1, cursor: !allAnswered ? "not-allowed" : "pointer" }} id="submit-btn">
-                            {submitting ? <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><div className="spinner" style={{ width: "16px", height: "16px", borderWidth: "2px" }} />Submitting...</div> : allAnswered ? "Submit Quiz ✓" : `Answer all (${quiz.questions.length - answeredCount} left)`}
+                        <button
+                            className="btn-primary"
+                            onClick={handleSubmit}
+                            disabled={!allAnswered || submitting}
+                            style={{ opacity: !allAnswered ? 0.5 : 1, cursor: !allAnswered ? "not-allowed" : "pointer" }}
+                            id="submit-btn"
+                        >
+                            {submitting
+                                ? <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><div className="spinner" style={{ width: "16px", height: "16px", borderWidth: "2px" }} />Submitting...</div>
+                                : allAnswered
+                                ? "🎉 Submit Quiz!"
+                                : `Answer all (${quiz.questions.length - answeredCount} left)`}
                         </button>
                     )}
                 </div>

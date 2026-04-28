@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "./client-layout";
 
-const inter = Inter({ subsets: ["latin"] });
+const nunito = Nunito({
+    subsets: ["latin"],
+    weight: ["400", "500", "600", "700", "800", "900"],
+});
 
 export const metadata: Metadata = {
     title: "QuizAI — AI-Powered Quiz Generator",
@@ -14,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={inter.className} suppressHydrationWarning>
+            <body className={nunito.className} suppressHydrationWarning>
                 <ClientLayout>{children}</ClientLayout>
             </body>
         </html>
