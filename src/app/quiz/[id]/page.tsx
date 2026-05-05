@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -40,6 +40,22 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     const [submitting, setSubmitting] = useState(false);
     const [studyPhase, setStudyPhase] = useState(true);
     const [adaptiveOrder, setAdaptiveOrder] = useState<number[]>([]);
+    const [elapsed, setElapsed] = useState(0);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const formatTime = useCallback((s: number) => {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+    }, []);
+
+    // Start timer when study phase ends or quiz loads (non-study)
+    useEffect(() => {
+        if (!quiz || loading) return;
+        if (quiz.mode === "study" && studyPhase) return; // don't tick during study reading
+        timerRef.current = setInterval(() => setElapsed((prev) => prev + 1), 1000);
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    }, [quiz, loading, studyPhase]);
 
     useEffect(() => {
         fetch(`/api/quiz?id=${id}`)
@@ -173,6 +189,9 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                             <div style={{ fontSize: "32px", fontWeight: 900 }}>
                                 <span className="gradient-text">{currentQ + 1}</span>
                                 <span style={{ fontSize: "16px", fontWeight: 600, color: "var(--text-secondary)" }}>/{quiz.questions.length}</span>
+                            </div>
+                            <div style={{ fontSize: "14px", fontWeight: 800, color: elapsed > 300 ? "#F87171" : "var(--text-secondary)", marginTop: "4px", fontFamily: "monospace" }}>
+                                ⏱ {formatTime(elapsed)}
                             </div>
                         </div>
                     </div>

@@ -135,6 +135,11 @@ export default function DashboardPage() {
                                             <div style={{ fontWeight: 800, fontSize: "15px", marginBottom: "5px", color: "var(--text-primary)" }}>{attempt.quiz.title}</div>
                                             <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
                                                 <span className={`badge badge-${attempt.quiz.difficulty}`}>{attempt.quiz.difficulty}</span>
+                                                {attempt.quiz.mode && attempt.quiz.mode !== "standard" && (
+                                                    <span className="badge" style={{ background: attempt.quiz.mode === "study" ? "rgba(56,189,248,0.15)" : "rgba(236,72,153,0.15)", color: attempt.quiz.mode === "study" ? "#38BDF8" : "#EC4899", border: `1.5px solid ${attempt.quiz.mode === "study" ? "rgba(56,189,248,0.3)" : "rgba(236,72,153,0.3)"}` }}>
+                                                        {attempt.quiz.mode === "study" ? "📖 Study" : "🎯 Adaptive"}
+                                                    </span>
+                                                )}
                                                 <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 700 }}>{attempt.score}/{attempt.totalQuestions} correct</span>
                                                 <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.6 }}>{formatDate(attempt.completedAt)}</span>
                                             </div>

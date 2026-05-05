@@ -284,10 +284,11 @@ export default function UploadPage() {
                         </div>
                     </div>
 
-                    {/* Difficulty */}
+                    {/* Difficulty — hidden in adaptive mode (it mixes all levels automatically) */}
+                    {mode !== "adaptive" && (
                     <div style={{ marginBottom: "28px" }}>
                         <label style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "14px" }}>
-                            {mode === "adaptive" ? "🎯 Starting Difficulty" : "💪 Difficulty Level"}
+                            💪 Difficulty Level
                         </label>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
                             {DIFFICULTIES.map((d) => {
@@ -316,6 +317,7 @@ export default function UploadPage() {
                             })}
                         </div>
                     </div>
+                    )}
 
                     {/* Question Count */}
                     <div style={{ marginBottom: "32px" }}>

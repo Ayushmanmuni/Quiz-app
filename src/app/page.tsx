@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export default function HomePage() {
+    const { data: session } = useSession();
+
     const features = [
         { icon: "📄", title: "Upload Any Document", desc: "Paste text or upload PDF/TXT files. Our AI understands your content instantly.", color: "violet" },
         { icon: "🤖", title: "AI Question Generation", desc: "Hugging Face AI extracts key concepts and creates perfect MCQs automatically.", color: "sky" },
@@ -67,12 +72,25 @@ export default function HomePage() {
                     </p>
 
                     <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-                        <Link href="/register">
-                            <button className="btn-primary" style={{ fontSize: "16px", padding: "15px 36px" }}>🚀 Start for Free</button>
-                        </Link>
-                        <Link href="/login">
-                            <button className="btn-secondary" style={{ fontSize: "16px", padding: "15px 36px" }}>Sign In</button>
-                        </Link>
+                        {session ? (
+                            <>
+                                <Link href="/upload">
+                                    <button className="btn-primary" style={{ fontSize: "16px", padding: "15px 36px" }}>✨ Create New Quiz</button>
+                                </Link>
+                                <Link href="/dashboard">
+                                    <button className="btn-secondary" style={{ fontSize: "16px", padding: "15px 36px" }}>📊 Dashboard</button>
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link href="/register">
+                                    <button className="btn-primary" style={{ fontSize: "16px", padding: "15px 36px" }}>🚀 Start for Free</button>
+                                </Link>
+                                <Link href="/login">
+                                    <button className="btn-secondary" style={{ fontSize: "16px", padding: "15px 36px" }}>Sign In</button>
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -163,10 +181,16 @@ export default function HomePage() {
             <section style={{ maxWidth: "700px", margin: "0 auto", padding: "40px 24px 100px", textAlign: "center", position: "relative", zIndex: 1 }}>
                 <div className="glass-strong animate-pulse-glow" style={{ padding: "60px 40px" }}>
                     <div style={{ fontSize: "48px", marginBottom: "16px" }}>🚀</div>
-                    <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, marginBottom: "16px" }}>Ready to level up your learning?</h2>
-                    <p style={{ color: "var(--text-secondary)", marginBottom: "36px", fontSize: "16px", fontWeight: 500 }}>Join thousands and start generating AI-powered quizzes today. Free forever! 🎊</p>
-                    <Link href="/register">
-                        <button className="btn-primary" style={{ fontSize: "17px", padding: "17px 44px" }}>🌟 Create Free Account</button>
+                    <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, marginBottom: "16px" }}>
+                        {session ? "Ready to test your knowledge?" : "Ready to level up your learning?"}
+                    </h2>
+                    <p style={{ color: "var(--text-secondary)", marginBottom: "36px", fontSize: "16px", fontWeight: 500 }}>
+                        {session ? "Create a new quiz from any topic or document. Let's go! 🎊" : "Join and start generating AI-powered quizzes today. Free forever! 🎊"}
+                    </p>
+                    <Link href={session ? "/upload" : "/register"}>
+                        <button className="btn-primary" style={{ fontSize: "17px", padding: "17px 44px" }}>
+                            {session ? "✨ Create New Quiz" : "🌟 Create Free Account"}
+                        </button>
                     </Link>
                 </div>
             </section>

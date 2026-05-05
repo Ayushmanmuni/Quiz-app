@@ -13,45 +13,65 @@ export interface GeneratedQuestion {
     difficulty?: "easy" | "medium" | "hard";
 }
 
+const DIFF_PROMPTS: Record<string, string> = {
+    easy: `EASY difficulty rules:
+- Questions test ONLY direct facts explicitly stated in the text
+- Wrong options should be obviously wrong or unrelated
+- Use simple, short sentences
+- Example: "What is the capital of France?" with options like Paris, London, Tokyo, Sydney`,
+    medium: `MEDIUM difficulty rules:
+- Questions test understanding and relationships between concepts
+- Wrong options should be plausible but clearly distinguishable
+- Require the student to connect two ideas together
+- Example: "Why does photosynthesis slow down at night?" requiring comprehension`,
+    hard: `HARD difficulty rules:
+- Questions test deep analysis, synthesis, and application of knowledge
+- ALL wrong options must be very plausible and tricky
+- Require critical thinking, comparison, or applying concepts to new scenarios
+- Example: "If X were removed from the process, which downstream effect would occur first?"`,
+};
+
+const ABSTRACT_WORDS: Record<string, number> = { easy: 150, medium: 300, hard: 500 };
+
 export async function generateQuizQuestions(
     text: string,
     difficulty: "easy" | "medium" | "hard",
     numQuestions: number,
     mode: "standard" | "study" | "adaptive" = "standard"
 ): Promise<GeneratedQuestion[]> {
-    const diffMap: Record<string, string> = {
-        easy: "Create straightforward questions based on explicit facts.",
-        medium: "Create questions requiring understanding and comprehension.",
-        hard: "Create challenging questions requiring deep analysis and synthesis.",
-    };
+    let diffInstructions = DIFF_PROMPTS[difficulty];
 
-    let extraInstructions = "";
     if (mode === "adaptive") {
         const per = Math.ceil(numQuestions / 3);
-        extraInstructions = `Generate a MIX of difficulties: ~${per} easy, ~${per} medium, ~${per} hard. Tag each with "difficulty".`;
-    } else if (mode === "study") {
-        extraInstructions = `Include VERY detailed explanations (2-3 sentences each) so the student can learn from them.`;
+        diffInstructions = `Generate a MIX of difficulties:
+- ~${per} EASY questions (direct fact recall, obvious wrong answers)
+- ~${per} MEDIUM questions (comprehension, connecting ideas)
+- ~${per} HARD questions (analysis, tricky plausible distractors)
+Tag each question with its actual difficulty level.`;
     }
 
-    const prompt = `You are an expert quiz maker. Generate exactly ${numQuestions} MCQs at ${difficulty.toUpperCase()} difficulty from the text below.
+    const studyNote = mode === "study"
+        ? "\nProvide VERY detailed explanations (2-3 sentences each) that teach the concept."
+        : "";
 
-${diffMap[difficulty]}
-${extraInstructions}
+    const prompt = `You are an expert quiz maker. Generate EXACTLY ${numQuestions} multiple-choice questions from the text below.
+
+${diffInstructions}
+${studyNote}
 
 TEXT:
 """
 ${text.substring(0, 6000)}
 """
 
-Return ONLY a valid JSON array. No markdown. No extra text. Format:
-[{"questionText":"...","optionA":"...","optionB":"...","optionC":"...","optionD":"...","correctAnswer":"A","explanation":"...","difficulty":"medium"}]
+Return ONLY a valid JSON array. No markdown. No extra text.
+[{"questionText":"...","optionA":"...","optionB":"...","optionC":"...","optionD":"...","correctAnswer":"A","explanation":"...","difficulty":"${difficulty}"}]
 
-Rules:
-- correctAnswer must be "A", "B", "C", or "D"
-- difficulty must be "easy", "medium", or "hard"
-- All 4 options plausible, only one correct
-- Explanations educational
-- Return ONLY the JSON array`;
+CRITICAL RULES:
+- correctAnswer must be exactly "A", "B", "C", or "D"
+- difficulty must be "${mode === "adaptive" ? "easy\", \"medium\", or \"hard" : difficulty}" for EVERY question
+- The correct answer MUST be placed randomly among A/B/C/D (NOT always A)
+- Return ONLY the JSON array, nothing else`;
 
     return await callAI(prompt);
 }
@@ -62,26 +82,32 @@ export async function generateTopicQuiz(
     numQuestions: number,
     mode: "standard" | "study" | "adaptive" = "standard"
 ): Promise<{ questions: GeneratedQuestion[]; generatedText: string }> {
-    let extraInstructions = "";
+    const wordCount = ABSTRACT_WORDS[difficulty];
+
+    let diffInstructions = DIFF_PROMPTS[difficulty];
     if (mode === "adaptive") {
-        extraInstructions = `Generate a MIX: some easy, some medium, some hard. Tag each with "difficulty".`;
-    } else if (mode === "study") {
-        extraInstructions = `Include VERY detailed explanations (2-3 sentences each).`;
+        const per = Math.ceil(numQuestions / 3);
+        diffInstructions = `Generate a MIX: ~${per} easy, ~${per} medium, ~${per} hard. Tag each with its difficulty.`;
     }
 
-    const prompt = `You are an expert teacher and quiz maker. The student wants to learn about: "${topic}".
+    const studyNote = mode === "study"
+        ? "\nProvide VERY detailed explanations (2-3 sentences each) that teach the concept."
+        : "";
 
-Step 1: Write a concise 300-word educational summary about "${topic}".
-Step 2: Generate exactly ${numQuestions} MCQs at ${difficulty.toUpperCase()} difficulty based on your summary.
-${extraInstructions}
+    const prompt = `You are an expert teacher. The student wants to learn about: "${topic}".
 
-Return ONLY a valid JSON object (no markdown):
-{"summary":"your 300-word summary here...","questions":[{"questionText":"...","optionA":"...","optionB":"...","optionC":"...","optionD":"...","correctAnswer":"A","explanation":"...","difficulty":"medium"}]}
+Step 1: Write a ${wordCount}-word educational summary about "${topic}".
+Step 2: Generate EXACTLY ${numQuestions} MCQs based on your summary.
 
-Rules:
-- correctAnswer must be "A", "B", "C", or "D"
-- difficulty must be "easy", "medium", or "hard"
-- All 4 options plausible, only one correct
+${diffInstructions}
+${studyNote}
+
+Return ONLY valid JSON (no markdown):
+{"summary":"your ${wordCount}-word summary...","questions":[{"questionText":"...","optionA":"...","optionB":"...","optionC":"...","optionD":"...","correctAnswer":"A","explanation":"...","difficulty":"${difficulty}"}]}
+
+CRITICAL RULES:
+- correctAnswer must be exactly "A", "B", "C", or "D"
+- The correct answer MUST be placed randomly among A/B/C/D (NOT always A)
 - Return ONLY the JSON object`;
 
     const models = [
@@ -97,7 +123,7 @@ Rules:
             const response = await hf.chatCompletion({
                 model,
                 messages: [
-                    { role: "system", content: "You are an expert teacher. Output ONLY valid JSON. No markdown." },
+                    { role: "system", content: "You are an expert teacher. Output ONLY valid JSON. No markdown. No extra text." },
                     { role: "user", content: prompt },
                 ],
                 max_tokens: 4096,
@@ -140,7 +166,7 @@ async function callAI(prompt: string): Promise<GeneratedQuestion[]> {
             const response = await hf.chatCompletion({
                 model,
                 messages: [
-                    { role: "system", content: "You are an expert quiz generator. Output ONLY valid JSON arrays. No markdown." },
+                    { role: "system", content: "You are an expert quiz generator. Output ONLY valid JSON arrays. No markdown. No extra text." },
                     { role: "user", content: prompt },
                 ],
                 max_tokens: 4096,
