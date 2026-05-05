@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 // POST — Submit quiz attempt
 export async function POST(req: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const { data: attempt, error } = await supabase
+        const { data: attempt, error } = await getSupabase()
             .from("quiz_attempts")
             .insert({
                 user_id: session.user.id,
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
         const id = req.nextUrl.searchParams.get("id");
 
         if (id) {
-            const { data: attempt, error } = await supabase
+            const { data: attempt, error } = await getSupabase()
                 .from("quiz_attempts")
                 .select("*")
                 .eq("id", id)
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
         }
 
         // All attempts for dashboard
-        const { data: attempts, error } = await supabase
+        const { data: attempts, error } = await getSupabase()
             .from("quiz_attempts")
             .select("*, quizzes(title, difficulty, mode)")
             .eq("user_id", session.user.id)

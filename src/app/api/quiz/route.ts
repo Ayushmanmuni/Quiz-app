@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateQuizQuestions, generateTopicQuiz } from "@/lib";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 // POST — Generate quiz (file upload, text, or topic-based)
 export async function POST(req: NextRequest) {
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Create quiz in Supabase
-        const { data: quiz, error: quizError } = await supabase
+        const { data: quiz, error: quizError } = await getSupabase()
             .from("quizzes")
             .insert({
                 title: title || (topic ? `${topic} Quiz` : `Quiz - ${new Date().toLocaleDateString()}`),
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
             sort_order: i,
         }));
 
-        const { error: qError } = await supabase.from("questions").insert(questionRows);
+        const { error: qError } = await getSupabase().from("questions").insert(questionRows);
 
         if (qError) {
             console.error("Questions insert error:", qError);
@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Quiz ID required" }, { status: 400 });
         }
 
-        const { data: quiz, error } = await supabase
+        const { data: quiz, error } = await getSupabase()
             .from("quizzes")
             .select("*")
             .eq("id", id)
@@ -146,7 +146,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
         }
 
-        const { data: questions } = await supabase
+        const { data: questions } = await getSupabase()
             .from("questions")
             .select("*")
             .eq("quiz_id", id)

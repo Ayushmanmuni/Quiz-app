@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
     try {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
         }
 
-        const { data: existing } = await supabase
+        const { data: existing } = await getSupabase()
             .from("users")
             .select("id")
             .eq("email", email)
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        const { data: user, error } = await supabase
+        const { data: user, error } = await getSupabase()
             .from("users")
             .insert({ name, email, password: hashedPassword })
             .select("id, name, email")

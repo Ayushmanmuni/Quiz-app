@@ -11,9 +11,6 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
     // Explicitly set turbopack root to this project directory
     turbopack: {
         root: __dirname,

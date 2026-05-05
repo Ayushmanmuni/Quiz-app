@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
@@ -14,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
 
-                const { data: user, error } = await supabase
+                const { data: user, error } = await getSupabase()
                     .from("users")
                     .select("*")
                     .eq("email", credentials.email as string)
