@@ -52,20 +52,12 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
     const containerRef = useRef<HTMLDivElement>(null);
     const [open, setOpen] = useState(false);
 
-    const [themePref, setThemePref] = useState<ThemePref>("system");
+    const [themePref, setThemePref] = useState<ThemePref>(() => getStored<ThemePref>("quizai_theme_pref", "system"));
     const [resolvedTheme, setResolvedTheme] = useState<ThemeMode>("dark");
-    const [bubblePosition, setBubblePosition] = useState<BubblePosition>("bottom-left");
-    const [bubbleSize, setBubbleSize] = useState<BubbleSize>("medium");
-    const [difficulty, setDifficulty] = useState<Difficulty>("medium");
-    const [notes, setNotes] = useState("");
-
-    useEffect(() => {
-        setThemePref(getStored<ThemePref>("quizai_theme_pref", "system"));
-        setBubblePosition(getStored<BubblePosition>("quizai_settings_position", "bottom-left"));
-        setBubbleSize(getStored<BubbleSize>("quizai_settings_size", "medium"));
-        setDifficulty(getStored<Difficulty>("quizai_difficulty", "medium"));
-        setNotes(getStored<string>("quizai_notes", ""));
-    }, []);
+    const [bubblePosition, setBubblePosition] = useState<BubblePosition>(() => getStored<BubblePosition>("quizai_settings_position", "bottom-left"));
+    const [bubbleSize, setBubbleSize] = useState<BubbleSize>(() => getStored<BubbleSize>("quizai_settings_size", "medium"));
+    const [difficulty, setDifficulty] = useState<Difficulty>(() => getStored<Difficulty>("quizai_difficulty", "medium"));
+    const [notes, setNotes] = useState(() => getStored<string>("quizai_notes", ""));
 
     useEffect(() => { setStored("quizai_theme_pref", themePref); }, [themePref]);
 

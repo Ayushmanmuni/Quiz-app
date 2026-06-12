@@ -1,15 +1,17 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-let _supabase: SupabaseClient | null = null
+let _supabase: SupabaseClient | null = null;
 
+// Use server-only environment variables here. Do NOT use NEXT_PUBLIC_* envs.
 export function getSupabase(): SupabaseClient {
     if (!_supabase) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        const url = process.env.SUPABASE_URL;
+        // Use a server-side key (service role or server key). This must NOT be exposed to clients.
+        const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
         if (!url || !key) {
-            throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
+            throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY (server-only)");
         }
-        _supabase = createClient(url, key)
+        _supabase = createClient(url, key);
     }
-    return _supabase
+    return _supabase;
 }

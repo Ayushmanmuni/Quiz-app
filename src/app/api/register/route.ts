@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getSupabase } from "@/lib/supabase";
+import { isValidEmail, isStrongPassword } from "@/lib/security";
+import logger from '@/logger';
 
 export async function POST(req: NextRequest) {
     try {
@@ -9,8 +11,14 @@ export async function POST(req: NextRequest) {
         if (!email || !password || !name) {
             return NextResponse.json({ error: "All fields are required" }, { status: 400 });
         }
-        if (password.length < 6) {
-            return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+        if (!isValidEmail(email)) {
+            return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+        }
+        if (!isStrongPassword(password)) {
+            return NextResponse.json(
+                { error: "Password must be at least 8 characters with uppercase, lowercase, number, and special character" },
+                { status: 400 }
+            );
         }
 
         const { data: existing } = await getSupabase()
@@ -32,13 +40,13 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (error) {
-            console.error("Register error:", error);
+            logger.error("Register error:", error);
             return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
         }
 
         return NextResponse.json({ user }, { status: 201 });
     } catch (error) {
-        console.error("Register error:", error);
+        logger.error("Register error:", error);
         return NextResponse.json({ error: "Registration failed" }, { status: 500 });
     }
 }

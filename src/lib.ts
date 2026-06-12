@@ -1,4 +1,5 @@
 import { HfInference } from "@huggingface/inference";
+import logger from "./logger";
 
 const hf = new HfInference(process.env.HF_TOKEN);
 
@@ -11,6 +12,44 @@ export interface GeneratedQuestion {
     correctAnswer: "A" | "B" | "C" | "D";
     explanation: string;
     difficulty?: "easy" | "medium" | "hard";
+}
+
+function isNonEmptyString(v: any): v is string {
+    return typeof v === "string" && v.trim().length > 0;
+}
+
+function validateGeneratedQuestion(obj: any): obj is GeneratedQuestion {
+    if (typeof obj !== "object" || obj === null) return false;
+    if (!isNonEmptyString(obj.questionText)) return false;
+    if (!isNonEmptyString(obj.optionA)) return false;
+    if (!isNonEmptyString(obj.optionB)) return false;
+    if (!isNonEmptyString(obj.optionC)) return false;
+    if (!isNonEmptyString(obj.optionD)) return false;
+    if (!isNonEmptyString(obj.explanation)) return false;
+    if (!["A", "B", "C", "D"].includes(obj.correctAnswer)) return false;
+    if (obj.difficulty && !["easy", "medium", "hard"].includes(obj.difficulty)) return false;
+    return true;
+}
+
+export function validateQuestionsArray(arr: any): GeneratedQuestion[] {
+    if (!Array.isArray(arr)) throw new Error("AI output is not an array");
+    const clean: GeneratedQuestion[] = [];
+    for (const item of arr) {
+        if (!validateGeneratedQuestion(item)) {
+            throw new Error("AI returned invalid question format");
+        }
+        clean.push({
+            questionText: item.questionText.trim(),
+            optionA: item.optionA.trim(),
+            optionB: item.optionB.trim(),
+            optionC: item.optionC.trim(),
+            optionD: item.optionD.trim(),
+            correctAnswer: item.correctAnswer,
+            explanation: item.explanation.trim(),
+            difficulty: item.difficulty || undefined,
+        });
+    }
+    return clean;
 }
 
 const DIFF_PROMPTS: Record<string, string> = {
@@ -74,6 +113,49 @@ CRITICAL RULES:
 - Return ONLY the JSON array, nothing else`;
 
     return await callAI(prompt);
+}
+
+// Ensure callAI validates results before returning
+async function callAI(prompt: string): Promise<GeneratedQuestion[]> {
+    const models = [
+        "Qwen/Qwen2.5-72B-Instruct",
+        "meta-llama/Llama-3.3-70B-Instruct",
+        "mistralai/Mixtral-8x7B-Instruct-v0.1",
+    ];
+
+    let lastError: Error | null = null;
+
+    for (const model of models) {
+        try {
+            const response = await hf.chatCompletion({
+                model,
+                messages: [
+                    { role: "system", content: "You are an expert quiz generator. Output ONLY valid JSON arrays. No markdown. No extra text." },
+                    { role: "user", content: prompt },
+                ],
+                max_tokens: 4096,
+                temperature: 0.7,
+            });
+
+            let text = response.choices[0]?.message?.content?.trim() || "";
+            text = text.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
+
+            const arrStart = text.indexOf("[");
+            const arrEnd = text.lastIndexOf("]");
+            if (arrStart !== -1 && arrEnd !== -1) {
+                text = text.substring(arrStart, arrEnd + 1);
+            }
+
+            const parsed = JSON.parse(text);
+            const questions = validateQuestionsArray(parsed);
+            if (questions.length > 0) return questions;
+        } catch (err) {
+            lastError = err as Error;
+            logger.error(`Model ${model} failed:`, (err as Error).message);
+        }
+    }
+
+    throw lastError || new Error("All models failed to generate quiz");
 }
 
 export async function generateTopicQuiz(
@@ -145,50 +227,10 @@ CRITICAL RULES:
             }
         } catch (err) {
             lastError = err as Error;
-            console.error(`Model ${model} failed:`, (err as Error).message);
+            logger.error(`Model ${model} failed:`, (err as Error).message);
         }
     }
 
     throw lastError || new Error("All models failed");
 }
 
-async function callAI(prompt: string): Promise<GeneratedQuestion[]> {
-    const models = [
-        "Qwen/Qwen2.5-72B-Instruct",
-        "meta-llama/Llama-3.3-70B-Instruct",
-        "mistralai/Mixtral-8x7B-Instruct-v0.1",
-    ];
-
-    let lastError: Error | null = null;
-
-    for (const model of models) {
-        try {
-            const response = await hf.chatCompletion({
-                model,
-                messages: [
-                    { role: "system", content: "You are an expert quiz generator. Output ONLY valid JSON arrays. No markdown. No extra text." },
-                    { role: "user", content: prompt },
-                ],
-                max_tokens: 4096,
-                temperature: 0.7,
-            });
-
-            let text = response.choices[0]?.message?.content?.trim() || "";
-            text = text.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
-
-            const arrStart = text.indexOf("[");
-            const arrEnd = text.lastIndexOf("]");
-            if (arrStart !== -1 && arrEnd !== -1) {
-                text = text.substring(arrStart, arrEnd + 1);
-            }
-
-            const questions: GeneratedQuestion[] = JSON.parse(text);
-            if (questions.length > 0) return questions;
-        } catch (err) {
-            lastError = err as Error;
-            console.error(`Model ${model} failed:`, (err as Error).message);
-        }
-    }
-
-    throw lastError || new Error("All models failed to generate quiz");
-}

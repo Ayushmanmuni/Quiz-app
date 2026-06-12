@@ -50,28 +50,46 @@ export default function RegisterPage() {
                                 boxShadow: "0 0 35px rgba(139, 92, 246, 0.5)",
                             }}
                             className="animate-bounce"
+                            role="img"
+                            aria-hidden="true"
                         >
                             🚀
                         </div>
-                        <h1 style={{ fontSize: "28px", fontWeight: 900, marginBottom: "8px" }}>Create your account 🎉</h1>
+                        <h1 style={{ fontSize: "28px", fontWeight: 900, marginBottom: "8px" }}>Create your account <span aria-hidden="true">🎉</span></h1>
                         <p style={{ color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600 }}>Free forever. No credit card required.</p>
                     </div>
 
                     {error && (
-                        <div style={{ background: "rgba(248, 113, 113, 0.1)", border: "1.5px solid rgba(248, 113, 113, 0.35)", borderRadius: "14px", padding: "12px 16px", marginBottom: "20px", fontSize: "14px", color: "#F87171", display: "flex", alignItems: "center", gap: "8px", fontWeight: 600 }}>
-                            ⚠️ {error}
+                        <div
+                            role="alert"
+                            aria-live="polite"
+                            aria-atomic="true"
+                            style={{ background: "rgba(248, 113, 113, 0.1)", border: "1.5px solid rgba(248, 113, 113, 0.35)", borderRadius: "14px", padding: "12px 16px", marginBottom: "20px", fontSize: "14px", color: "#F87171", display: "flex", alignItems: "center", gap: "8px", fontWeight: 600 }}
+                        >
+                            <span aria-hidden="true">⚠️</span> {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <form
+                        onSubmit={handleSubmit}
+                        role="form"
+                        aria-label="Registration form"
+                        noValidate
+                        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+                    >
                         {[
-                            { id: "name",     label: "Full Name",        type: "text",     placeholder: "Your awesome name 😊",  key: "name" as const },
-                            { id: "email",    label: "Email Address",    type: "email",    placeholder: "you@example.com",         key: "email" as const },
-                            { id: "password", label: "Password",         type: "password", placeholder: "Min. 6 characters 🔒",   key: "password" as const },
-                            { id: "confirm",  label: "Confirm Password", type: "password", placeholder: "Repeat your password",    key: "confirm" as const },
+                            { id: "name",     label: "Full Name",        type: "text",     placeholder: "Your awesome name 😊",  key: "name" as const, hint: "Enter your full name" },
+                            { id: "email",    label: "Email Address",    type: "email",    placeholder: "you@example.com",         key: "email" as const, hint: "Enter a valid email address" },
+                            { id: "password", label: "Password",         type: "password", placeholder: "Min. 6 characters 🔒",   key: "password" as const, hint: "At least 6 characters for security" },
+                            { id: "confirm",  label: "Confirm Password", type: "password", placeholder: "Repeat your password",    key: "confirm" as const, hint: "Must match password above" },
                         ].map((field) => (
                             <div key={field.id}>
-                                <label style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}>{field.label}</label>
+                                <label
+                                    htmlFor={field.id}
+                                    style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}
+                                >
+                                    {field.label} <span aria-label="required">*</span>
+                                </label>
                                 <input
                                     type={field.type}
                                     className="input-field"
@@ -80,18 +98,25 @@ export default function RegisterPage() {
                                     onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
                                     required
                                     id={field.id}
+                                    aria-required="true"
+                                    aria-describedby={`${field.id}-hint`}
                                 />
+                                <p id={`${field.id}-hint`} style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
+                                    {field.hint}
+                                </p>
                             </div>
                         ))}
                         <button
                             type="submit"
                             className="btn-primary"
                             disabled={loading}
+                            aria-busy={loading}
+                            aria-label={loading ? "Creating account..." : "Create free account"}
                             style={{ width: "100%", justifyContent: "center", marginTop: "8px", opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer", fontSize: "16px", padding: "15px" }}
                         >
                             {loading
                                 ? <><div className="spinner" style={{ width: "18px", height: "18px", borderWidth: "2px" }} />Creating account...</>
-                                : "🌟 Create Free Account"
+                                : <><span aria-hidden="true">🌟</span> Create Free Account</>
                             }
                         </button>
                     </form>

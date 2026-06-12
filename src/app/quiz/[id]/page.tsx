@@ -64,10 +64,17 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                 setQuiz(data);
                 setLoading(false);
                 if (data.mode === "adaptive" && data.questions?.length) {
-                    const easy = data.questions.filter((q: Question) => q.difficulty === "easy").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "easy")[i]));
-                    const med  = data.questions.filter((q: Question) => q.difficulty === "medium").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "medium")[i]));
-                    const hard = data.questions.filter((q: Question) => q.difficulty === "hard").map((_: Question, i: number) => data.questions.indexOf(data.questions.filter((q: Question) => q.difficulty === "hard")[i]));
-                    setAdaptiveOrder([...med, ...easy, ...hard].slice(0, data.questions.length));
+                    const medium: number[] = [];
+                    const easy: number[] = [];
+                    const hard: number[] = [];
+
+                    data.questions.forEach((q: Question, index: number) => {
+                        if (q.difficulty === "medium") medium.push(index);
+                        else if (q.difficulty === "easy") easy.push(index);
+                        else hard.push(index);
+                    });
+
+                    setAdaptiveOrder([...medium, ...easy, ...hard]);
                 }
                 if (data.mode !== "study") setStudyPhase(false);
             })
@@ -146,7 +153,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                         <h2 style={{ fontSize: "18px", fontWeight: 800, marginBottom: "16px", color: "var(--accent-light)" }}>📚 Topic Abstract</h2>
                         {quiz.sourceText || "No abstract available for this topic."}
                     </div>
-                    <button className="btn-primary" onClick={() => setStudyPhase(false)} style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "17px" }}>
+                    <button type="button" className="btn-primary" onClick={() => setStudyPhase(false)} style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "17px" }}>
                         ✅ I&apos;ve studied — Start the Quiz! 🚀
                     </button>
                 </div>
@@ -211,9 +218,11 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                             return (
                                 <button
                                     key={opt}
+                                    type="button"
                                     className={`${OPT_CLASSES[opt]}${isSelected ? " selected" : ""}`}
                                     onClick={() => handleSelect(question.id, opt)}
                                     id={`option-${opt.toLowerCase()}`}
+                                    aria-pressed={isSelected}
                                 >
                                     <span className={BADGE_CLASSES[opt]}>{opt}</span>
                                     <span style={{ flex: 1, fontSize: "15px", fontWeight: 600 }}>{optionTexts[opt]}</span>
@@ -228,6 +237,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
                     <button
                         className="btn-secondary"
+                        type="button"
                         onClick={handlePrev}
                         disabled={currentQ === 0}
                         style={{ opacity: currentQ === 0 ? 0.3 : 1, cursor: currentQ === 0 ? "not-allowed" : "pointer" }}
@@ -244,19 +254,22 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                             return (
                                 <button
                                     key={i}
+                                    type="button"
                                     onClick={() => setCurrentQ(i)}
                                     style={{ width: "10px", height: "10px", borderRadius: "50%", border: "none", cursor: "pointer", background: dotColor, transition: "all 0.2s ease", transform: i === currentQ ? "scale(1.4)" : "scale(1)", padding: 0 }}
                                     aria-label={`Go to question ${i + 1}`}
+                                    aria-current={i === currentQ ? "step" : undefined}
                                 />
                             );
                         })}
                     </div>
 
                     {currentQ < quiz.questions.length - 1 ? (
-                        <button className="btn-primary" onClick={handleNext} id="next-btn">Next →</button>
+                        <button className="btn-primary" type="button" onClick={handleNext} id="next-btn">Next →</button>
                     ) : (
                         <button
                             className="btn-primary"
+                            type="button"
                             onClick={handleSubmit}
                             disabled={!allAnswered || submitting}
                             style={{ opacity: !allAnswered ? 0.5 : 1, cursor: !allAnswered ? "not-allowed" : "pointer" }}

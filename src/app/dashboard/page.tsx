@@ -62,7 +62,7 @@ export default function DashboardPage() {
     const formatDate  = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
     return (
-        <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
+        <main style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, maxWidth: "1000px", margin: "0 auto", padding: "50px 24px 80px" }}>
 
@@ -70,53 +70,82 @@ export default function DashboardPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "40px", flexWrap: "wrap", gap: "16px" }}>
                     <div className="animate-slide-up">
                         <h1 style={{ fontSize: "30px", fontWeight: 900, marginBottom: "6px" }}>
-                            Welcome back, {session?.user?.name?.split(" ")[0] || "there"} 👋
+                            Welcome back, {session?.user?.name?.split(" ")[0] || "there"} <span aria-hidden="true">👋</span>
                         </h1>
                         <p style={{ color: "var(--text-secondary)", fontSize: "15px", fontWeight: 600 }}>Track your quiz progress and start new challenges.</p>
                     </div>
                     <Link href="/upload">
-                        <button className="btn-primary" style={{ padding: "12px 26px" }}>✨ New Quiz</button>
+                        <button
+                            className="btn-primary"
+                            style={{ padding: "12px 26px" }}
+                            aria-label="Create a new quiz"
+                        >
+                            <span aria-hidden="true">✨</span> New Quiz
+                        </button>
                     </Link>
                 </div>
 
                 {/* Stats Grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-                    {stats.map((s, i) => (
-                        <div key={i} className="glass card-hover" style={{ padding: "24px", borderColor: `${s.color}0.25)` }}>
+                <section aria-label="Quiz statistics">
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+                        {stats.map((s, i) => (
                             <div
-                                style={{
-                                    width: "48px",
-                                    height: "48px",
-                                    borderRadius: "14px",
-                                    background: `${s.color}0.15)`,
-                                    border: `1.5px solid ${s.color}0.3)`,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: "24px",
-                                    marginBottom: "14px",
-                                }}
+                                key={i}
+                                className="glass card-hover"
+                                style={{ padding: "24px", borderColor: `${s.color}0.25)` }}
+                                role="region"
+                                aria-label={`${s.label}: ${s.value}`}
                             >
-                                {s.icon}
+                                <div
+                                    style={{
+                                        width: "48px",
+                                        height: "48px",
+                                        borderRadius: "14px",
+                                        background: `${s.color}0.15)`,
+                                        border: `1.5px solid ${s.color}0.3)`,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "24px",
+                                        marginBottom: "14px",
+                                    }}
+                                    aria-hidden="true"
+                                >
+                                    {s.icon}
+                                </div>
+                                <div style={{ fontSize: "30px", fontWeight: 900, marginBottom: "4px", color: `${s.color}0.95)` }}>{s.value}</div>
+                                <div style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: 700 }}>{s.label}</div>
                             </div>
-                            <div style={{ fontSize: "30px", fontWeight: 900, marginBottom: "4px", color: `${s.color}0.95)` }}>{s.value}</div>
-                            <div style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: 700 }}>{s.label}</div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                </section>
 
                 {/* Recent Quizzes */}
-                <div>
-                    <h2 style={{ fontSize: "20px", fontWeight: 900, marginBottom: "20px" }}>🕐 Recent Quizzes</h2>
+                <section aria-label="Recent quizzes">
+                    <h2 style={{ fontSize: "20px", fontWeight: 900, marginBottom: "20px" }}>
+                        <span aria-hidden="true">🕐</span> Recent Quizzes
+                    </h2>
                     {attempts.length === 0 ? (
                         <div className="glass-strong" style={{ padding: "60px 40px", textAlign: "center" }}>
-                            <div style={{ fontSize: "72px", marginBottom: "16px" }} className="animate-float">🦄</div>
+                            <div
+                                style={{ fontSize: "72px", marginBottom: "16px" }}
+                                className="animate-float"
+                                aria-hidden="true"
+                            >
+                                🦄
+                            </div>
                             <h3 style={{ fontSize: "22px", fontWeight: 900, marginBottom: "10px" }}>No quizzes yet!</h3>
                             <p style={{ color: "var(--text-secondary)", marginBottom: "28px", fontSize: "15px", fontWeight: 600 }}>
-                                Generate your first AI-powered quiz from any document, topic, or text. It&apos;s free! 🚀
+                                Generate your first AI-powered quiz from any document, topic, or text. It&apos;s free! <span aria-hidden="true">🚀</span>
                             </p>
                             <Link href="/upload">
-                                <button className="btn-primary" style={{ padding: "14px 32px", fontSize: "16px" }}>✨ Generate First Quiz</button>
+                                <button
+                                    className="btn-primary"
+                                    style={{ padding: "14px 32px", fontSize: "16px" }}
+                                    aria-label="Generate your first quiz"
+                                >
+                                    <span aria-hidden="true">✨</span> Generate First Quiz
+                                </button>
                             </Link>
                         </div>
                     ) : (
@@ -126,27 +155,90 @@ export default function DashboardPage() {
                                 const scoreKey = getScoreKey(pct);
                                 const color    = SCORE_COLORS[scoreKey];
                                 return (
-                                    <div key={attempt.id} className="glass card-hover" style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
+                                    <div
+                                        key={attempt.id}
+                                        className="glass card-hover"
+                                        style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}
+                                        role="region"
+                                        aria-label={`${attempt.quiz.title} - ${pct}% score`}
+                                    >
                                         {/* Score ring */}
-                                        <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: `conic-gradient(${color} ${pct * 3.6}deg, rgba(255,255,255,0.06) 0)`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", flexShrink: 0 }}>
-                                            <div style={{ position: "absolute", inset: "6px", borderRadius: "50%", background: "var(--bg-secondary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "13px", color }}>{pct}%</div>
+                                        <div
+                                            style={{
+                                                width: "60px",
+                                                height: "60px",
+                                                borderRadius: "50%",
+                                                background: `conic-gradient(${color} ${pct * 3.6}deg, rgba(255,255,255,0.06) 0)`,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                position: "relative",
+                                                flexShrink: 0,
+                                            }}
+                                            role="img"
+                                            aria-label={`Score: ${pct}%`}
+                                        >
+                                            <div
+                                                style={{
+                                                    position: "absolute",
+                                                    inset: "6px",
+                                                    borderRadius: "50%",
+                                                    background: "var(--bg-secondary)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    fontWeight: 900,
+                                                    fontSize: "13px",
+                                                    color,
+                                                }}
+                                            >
+                                                {pct}%
+                                            </div>
                                         </div>
                                         <div style={{ flex: 1, minWidth: "160px" }}>
-                                            <div style={{ fontWeight: 800, fontSize: "15px", marginBottom: "5px", color: "var(--text-primary)" }}>{attempt.quiz.title}</div>
+                                            <div style={{ fontWeight: 800, fontSize: "15px", marginBottom: "5px", color: "var(--text-primary)" }}>
+                                                {attempt.quiz.title}
+                                            </div>
                                             <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                                                <span className={`badge badge-${attempt.quiz.difficulty}`}>{attempt.quiz.difficulty}</span>
+                                                <span className={`badge badge-${attempt.quiz.difficulty}`}>
+                                                    {attempt.quiz.difficulty}
+                                                </span>
                                                 {attempt.quiz.mode && attempt.quiz.mode !== "standard" && (
-                                                    <span className="badge" style={{ background: attempt.quiz.mode === "study" ? "rgba(56,189,248,0.15)" : "rgba(236,72,153,0.15)", color: attempt.quiz.mode === "study" ? "#38BDF8" : "#EC4899", border: `1.5px solid ${attempt.quiz.mode === "study" ? "rgba(56,189,248,0.3)" : "rgba(236,72,153,0.3)"}` }}>
+                                                    <span
+                                                        className="badge"
+                                                        style={{
+                                                            background: attempt.quiz.mode === "study" ? "rgba(56,189,248,0.15)" : "rgba(236,72,153,0.15)",
+                                                            color: attempt.quiz.mode === "study" ? "#38BDF8" : "#EC4899",
+                                                            border: `1.5px solid ${attempt.quiz.mode === "study" ? "rgba(56,189,248,0.3)" : "rgba(236,72,153,0.3)"}`,
+                                                        }}
+                                                    >
                                                         {attempt.quiz.mode === "study" ? "📖 Study" : "🎯 Adaptive"}
                                                     </span>
                                                 )}
-                                                <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 700 }}>{attempt.score}/{attempt.totalQuestions} correct</span>
-                                                <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.6 }}>{formatDate(attempt.completedAt)}</span>
+                                                <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 700 }}>
+                                                    {attempt.score}/{attempt.totalQuestions} correct
+                                                </span>
+                                                <span
+                                                    style={{
+                                                        fontSize: "12px",
+                                                        color: "var(--text-secondary)",
+                                                        opacity: 0.6,
+                                                    }}
+                                                    title={new Date(attempt.completedAt).toLocaleString()}
+                                                >
+                                                    {formatDate(attempt.completedAt)}
+                                                </span>
                                             </div>
                                         </div>
                                         <div style={{ display: "flex", gap: "8px" }}>
                                             <Link href={`/quiz/${attempt.quizId}/results?attempt=${attempt.id}`}>
-                                                <button className="btn-secondary" style={{ padding: "8px 18px", fontSize: "13px" }}>Review</button>
+                                                <button
+                                                    className="btn-secondary"
+                                                    style={{ padding: "8px 18px", fontSize: "13px" }}
+                                                    aria-label={`Review ${attempt.quiz.title}`}
+                                                >
+                                                    Review
+                                                </button>
                                             </Link>
                                             <Link href={`/quiz/${attempt.quizId}`}>
                                                 <button className="btn-primary" style={{ padding: "8px 18px", fontSize: "13px" }}>Retake 🔁</button>
@@ -157,8 +249,8 @@ export default function DashboardPage() {
                             })}
                         </div>
                     )}
-                </div>
+                </section>
             </div>
-        </div>
+        </main>
     );
 }

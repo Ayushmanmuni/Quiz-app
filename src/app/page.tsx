@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export default function HomePage() {
     const { data: session } = useSession();
@@ -30,15 +31,41 @@ export default function HomePage() {
         { e: "💫", top: "40%", right: "3%", delay: "2s", duration: "5.5s" },
     ];
 
+    const [reducedMotion, setReducedMotion] = useState(() => {
+        if (typeof window === "undefined") return false;
+        try {
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        } catch {
+            return false;
+        }
+    });
+
+    useEffect(() => {
+        try {
+            const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+            if (mq.addEventListener) mq.addEventListener('change', handler);
+            else (mq as any).addListener(handler);
+            return () => {
+                if (mq.removeEventListener) mq.removeEventListener('change', handler);
+                else (mq as any).removeListener(handler);
+            };
+        } catch {
+            // ignore on SSR
+        }
+    }, []);
+
     return (
         <div style={{ position: "relative" }}>
             <div className="bg-mesh" />
 
-            {/* Floating decoration emojis */}
+            {/* Floating decoration emojis (decorative only; respects reduced-motion) */}
             {decorEmojis.map((d, i) => (
                 <div
                     key={i}
-                    className="animate-float"
+                    className={reducedMotion ? undefined : "animate-float"}
+                    role="img"
+                    aria-hidden={true}
                     style={{
                         position: "fixed",
                         top: d.top,
@@ -48,8 +75,9 @@ export default function HomePage() {
                         opacity: 0.35,
                         pointerEvents: "none",
                         zIndex: 0,
-                        animationDelay: d.delay,
-                        animationDuration: d.duration,
+                        animationDelay: reducedMotion ? undefined : d.delay,
+                        animationDuration: reducedMotion ? undefined : d.duration,
+                        animationPlayState: reducedMotion ? 'paused' : undefined,
                     }}
                 >
                     {d.e}

@@ -59,13 +59,19 @@ CREATE TABLE quiz_attempts (
 -- RLS policies (allow all — auth handled in API routes)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quizzes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE questions ENABLE ROW LEVEL SECURITY; 
 ALTER TABLE quiz_attempts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "allow_all_users" ON users FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_quizzes" ON quizzes FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_questions" ON questions FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_attempts" ON quiz_attempts FOR ALL USING (true) WITH CHECK (true);
+-- NOTE: The following permissive policies were removed to avoid accidental public access.
+-- You MUST configure RLS policies appropriate to your authentication setup.
+-- Example policies for Supabase Auth (if you use Supabase Auth):
+--
+-- CREATE POLICY "users_self" ON users FOR ALL USING (auth.role() = 'authenticated' AND id = auth.uid()) WITH CHECK (id = auth.uid());
+-- CREATE POLICY "quizzes_owner" ON quizzes FOR ALL USING (auth.role() = 'authenticated' AND user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+-- CREATE POLICY "questions_owner" ON questions FOR ALL USING (auth.role() = 'authenticated' AND EXISTS (SELECT 1 FROM quizzes WHERE quizzes.id = questions.quiz_id AND quizzes.user_id = auth.uid())) WITH CHECK (true);
+-- CREATE POLICY "attempts_owner" ON quiz_attempts FOR ALL USING (auth.role() = 'authenticated' AND user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+--
+-- If you do not use Supabase Auth (e.g., using NextAuth), do NOT create open policies. Instead, keep RLS enabled and implement a service role or Postgres functions that perform checks. Consult Supabase docs for secure patterns.
 
 -- Indexes
 CREATE INDEX idx_quizzes_user ON quizzes(user_id);

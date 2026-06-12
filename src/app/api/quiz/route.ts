@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateQuizQuestions, generateTopicQuiz } from "@/lib";
 import { getSupabase } from "@/lib/supabase";
+import logger from "@/logger";
+import { trackEvent } from "@/monitoring";
+import { checkRateLimit, createRateLimitResponse } from "@/middleware/rateLimit";
 
 // POST — Generate quiz (file upload, text, or topic-based)
 export async function POST(req: NextRequest) {
@@ -9,6 +12,13 @@ export async function POST(req: NextRequest) {
         const session = await auth();
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Rate limit per user to protect heavy model usage
+        const userKey = `quiz:${session.user.id}`;
+        const rateLimitCheck = await checkRateLimit(req, userKey);
+        if (!rateLimitCheck.allowed) {
+            return createRateLimitResponse(rateLimitCheck.retryAfter);
         }
 
         const contentType = req.headers.get("content-type") || "";
@@ -25,6 +35,11 @@ export async function POST(req: NextRequest) {
             const allowedTypes = ["text/plain", "application/pdf", "text/markdown"];
             if (!allowedTypes.includes(file.type)) {
                 return NextResponse.json({ error: "Only .txt and .pdf files are supported" }, { status: 400 });
+            }
+
+            const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
+            if (typeof (file as any).size === "number" && (file as any).size > MAX_FILE_BYTES) {
+                return NextResponse.json({ error: "File too large. Max 5MB allowed." }, { status: 413 });
             }
 
             let text = "";
@@ -90,11 +105,22 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (quizError || !quiz) {
-            console.error("Quiz create error:", quizError);
+            logger.error("Quiz create error:", quizError);
+            trackEvent(
+                "quiz_create_failed",
+                {
+                    userId: session.user.id,
+                    difficulty,
+                    mode,
+                    source,
+                    error: quizError?.message,
+                },
+                "error",
+            );
             return NextResponse.json({ error: "Failed to save quiz" }, { status: 500 });
         }
 
-        // Insert questions
+        // Insert questions. If inserting questions fails, delete the created quiz to avoid orphaned quizzes.
         const questionRows = questions.map((q, i) => ({
             quiz_id: quiz.id,
             question_text: q.questionText,
@@ -111,14 +137,39 @@ export async function POST(req: NextRequest) {
         const { error: qError } = await getSupabase().from("questions").insert(questionRows);
 
         if (qError) {
-            console.error("Questions insert error:", qError);
+            logger.error("Questions insert error:", qError);
+            trackEvent(
+                "quiz_questions_insert_failed",
+                {
+                    quizId: quiz.id,
+                    userId: session.user.id,
+                    questionCount: questions.length,
+                    error: qError.message,
+                },
+                "error",
+            );
+            try {
+                await getSupabase().from("quizzes").delete().eq("id", quiz.id);
+            } catch (delErr) {
+                logger.error("Failed to delete orphan quiz:", delErr);
+            }
             return NextResponse.json({ error: "Failed to save questions" }, { status: 500 });
         }
+
+        trackEvent("quiz_created", {
+            quizId: quiz.id,
+            userId: session.user.id,
+            difficulty,
+            mode,
+            source,
+            questionCount: questions.length,
+        });
 
         return NextResponse.json({ quizId: quiz.id }, { status: 201 });
     } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
-        console.error("Quiz API error:", msg);
+        logger.error("Quiz API error:", msg);
+        trackEvent("quiz_api_exception", { error: msg }, "error");
         return NextResponse.json({ error: `Quiz operation failed: ${msg}` }, { status: 500 });
     }
 }
@@ -178,7 +229,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(mapped);
     } catch (error) {
-        console.error("Get quiz error:", error);
+        logger.error("Get quiz error:", error);
         return NextResponse.json({ error: "Failed to fetch quiz" }, { status: 500 });
     }
 }

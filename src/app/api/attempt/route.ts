@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getSupabase } from "@/lib/supabase";
+import logger from '@/logger';
 
 // POST — Submit quiz attempt
 export async function POST(req: NextRequest) {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (error) {
-            console.error("Save attempt error:", error);
+            logger.error("Save attempt error:", error);
             return NextResponse.json({ error: "Failed to save attempt" }, { status: 500 });
         }
 
@@ -76,7 +77,7 @@ export async function GET(req: NextRequest) {
             .order("completed_at", { ascending: false });
 
         if (error) {
-            console.error("Dashboard error:", error);
+            logger.error("Dashboard error:", error);
             return NextResponse.json({ error: "Failed to fetch attempts" }, { status: 500 });
         }
 
@@ -92,7 +93,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(mapped);
     } catch (error) {
-        console.error("Attempt API error:", error);
+        logger.error("Attempt API error:", error);
         return NextResponse.json({ error: "Failed to fetch attempt(s)" }, { status: 500 });
     }
 }

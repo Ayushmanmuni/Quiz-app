@@ -23,7 +23,16 @@ export default function UploadPage() {
     const [text, setText]                   = useState("");
     const [title, setTitle]                 = useState("");
     const [topic, setTopic]                 = useState("");
-    const [difficulty, setDifficulty]       = useState("medium");
+    const [difficulty, setDifficulty]       = useState(() => {
+        if (typeof window === "undefined") return "medium";
+        try {
+            const stored = window.localStorage.getItem("quizai_difficulty");
+            if (!stored) return "medium";
+            const parsed = JSON.parse(stored) as string;
+            if (["easy", "medium", "hard"].includes(parsed)) return parsed;
+        } catch { /* ignore */ }
+        return "medium";
+    });
     const [mode, setMode]                   = useState("standard");
     const [numQuestions, setNumQuestions]   = useState(10);
     const [loading, setLoading]             = useState(false);
@@ -33,14 +42,12 @@ export default function UploadPage() {
     const [fileName, setFileName]           = useState("");
     const fileRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        try {
-            const stored = window.localStorage.getItem("quizai_difficulty");
-            if (!stored) return;
-            const parsed = JSON.parse(stored) as string;
-            if (["easy", "medium", "hard"].includes(parsed)) setDifficulty(parsed);
-        } catch { /* ignore */ }
-    }, []);
+    const handleFileZoneKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fileRef.current?.click();
+        }
+    };
 
     useEffect(() => {
         try { window.localStorage.setItem("quizai_difficulty", JSON.stringify(difficulty)); } catch { /* ignore */ }
@@ -133,7 +140,7 @@ export default function UploadPage() {
 
                     {/* Title */}
                     <div style={{ marginBottom: "28px" }}>
-                        <label style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}>
+                        <label htmlFor="quiz-title" style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}>
                             Quiz Title (optional)
                         </label>
                         <input
@@ -147,10 +154,15 @@ export default function UploadPage() {
                     </div>
 
                     {/* Source Tabs */}
-                    <div style={{ display: "flex", gap: "4px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "999px", padding: "4px", marginBottom: "24px", width: "fit-content" }}>
+                    <div role="tablist" aria-label="Quiz source" style={{ display: "flex", gap: "4px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "999px", padding: "4px", marginBottom: "24px", width: "fit-content" }}>
                         {tabs.map((tab) => (
                             <button
                                 key={tab.key}
+                                id={`${tab.key}-tab`}
+                                type="button"
+                                role="tab"
+                                aria-selected={activeTab === tab.key}
+                                aria-controls={`${tab.key}-panel`}
                                 onClick={() => setActiveTab(tab.key)}
                                 style={{
                                     background: activeTab === tab.key ? "linear-gradient(135deg, rgba(139,92,246,0.25), rgba(236,72,153,0.15))" : "transparent",
@@ -172,8 +184,8 @@ export default function UploadPage() {
 
                     {/* Paste Text */}
                     {activeTab === "paste" && (
-                        <div style={{ marginBottom: "28px" }}>
-                            <label style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}>Your Content</label>
+                        <div id="paste-panel" role="tabpanel" aria-labelledby="paste-tab" style={{ marginBottom: "28px" }}>
+                            <label htmlFor="content-text" style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}>Your Content</label>
                             <textarea
                                 className="input-field"
                                 placeholder="Paste your text, notes, article... (minimum 100 characters) 📝"
@@ -191,7 +203,7 @@ export default function UploadPage() {
 
                     {/* Upload File */}
                     {activeTab === "upload" && (
-                        <div style={{ marginBottom: "28px" }}>
+                        <div id="upload-panel" role="tabpanel" aria-labelledby="upload-tab" style={{ marginBottom: "28px" }}>
                             <input
                                 type="file"
                                 ref={fileRef}
@@ -202,7 +214,11 @@ export default function UploadPage() {
                             />
                             <div
                                 className="drop-zone"
+                                role="button"
+                                tabIndex={0}
+                                aria-label="Upload a text, PDF, or markdown file"
                                 onClick={() => fileRef.current?.click()}
+                                onKeyDown={handleFileZoneKeyDown}
                                 onDragOver={(e) => e.preventDefault()}
                                 onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileUpload(f); }}
                             >
@@ -233,8 +249,8 @@ export default function UploadPage() {
 
                     {/* Topic */}
                     {activeTab === "topic" && (
-                        <div style={{ marginBottom: "28px" }}>
-                            <label style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}>Topic</label>
+                        <div id="topic-panel" role="tabpanel" aria-labelledby="topic-tab" style={{ marginBottom: "28px" }}>
+                            <label htmlFor="topic-input" style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}>Topic</label>
                             <input
                                 type="text"
                                 className="input-field"
@@ -262,6 +278,8 @@ export default function UploadPage() {
                                 return (
                                     <button
                                         key={m.value}
+                                        type="button"
+                                        aria-pressed={isActive}
                                         onClick={() => setMode(m.value)}
                                         style={{
                                             padding: "16px 12px",
@@ -296,6 +314,8 @@ export default function UploadPage() {
                                 return (
                                     <button
                                         key={d.value}
+                                        type="button"
+                                        aria-pressed={isActive}
                                         onClick={() => setDifficulty(d.value)}
                                         style={{
                                             padding: "16px 12px",
@@ -353,6 +373,7 @@ export default function UploadPage() {
                     {/* Generate Button */}
                     <button
                         className="btn-primary"
+                        type="button"
                         onClick={handleGenerate}
                         style={{ width: "100%", justifyContent: "center", fontSize: "16px", padding: "17px", cursor: "pointer" }}
                         id="generate-btn"
