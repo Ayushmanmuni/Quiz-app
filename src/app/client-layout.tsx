@@ -192,35 +192,30 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                 <div
                     role="menu"
                     aria-label="Settings menu"
-                    className="glass-strong"
+                    className="glass-strong settings-panel"
                     style={{
-                        position: "absolute",
                         ...panelPlacementStyle,
-                        width: "360px",
                         padding: bubbleMetrics.pad,
-                        boxShadow: "0 40px 120px rgba(0,0,0,0.45), 0 0 40px rgba(139,92,246,0.1)",
-                        zIndex: 200,
-                        color: "var(--text-primary)",
                     }}
                 >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
-                        <div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>Account</div>
-                            <div style={{ fontSize: "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "260px" }}>
+                            <div style={{ fontSize: "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {accountLabel}
                             </div>
                         </div>
                         {session ? (
                             <button
                                 onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
-                                style={{ background: "rgba(248,113,113,0.12)", border: "1.5px solid rgba(248,113,113,0.3)", color: "#F87171", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
+                                style={{ background: "rgba(248,113,113,0.12)", border: "1.5px solid rgba(248,113,113,0.3)", color: "#F87171", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif", flexShrink: 0 }}
                             >
                                 Logout
                             </button>
                         ) : (
                             <button
                                 onClick={() => { setOpen(false); signIn(undefined, { callbackUrl: "/dashboard" }); }}
-                                style={{ background: "rgba(52,211,153,0.12)", border: "1.5px solid rgba(52,211,153,0.3)", color: "#34D399", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
+                                style={{ background: "rgba(52,211,153,0.12)", border: "1.5px solid rgba(52,211,153,0.3)", color: "#34D399", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif", flexShrink: 0 }}
                             >
                                 Login
                             </button>
@@ -237,16 +232,16 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                             { label: "Position", desc: "Adjust the placement of your tools.", value: bubblePosition, onChange: (v: string) => setBubblePosition(v as BubblePosition), options: [{ value: "bottom-left", label: "Bottom Left" }, { value: "bottom-right", label: "Bottom Right" }, { value: "top-left", label: "Top Left" }, { value: "top-right", label: "Top Right" }] },
                             { label: "Size", desc: "Adjust the size of the tools.", value: bubbleSize, onChange: (v: string) => setBubbleSize(v as BubbleSize), options: [{ value: "small", label: "Small" }, { value: "medium", label: "Medium" }, { value: "large", label: "Large" }] },
                         ].map((pref) => (
-                            <div key={pref.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 0" }}>
-                                <div>
+                            <div key={pref.label} className="settings-pref-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 0" }}>
+                                <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{pref.label}</div>
-                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{pref.desc}</div>
+                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pref.desc}</div>
                                 </div>
                                 <select
                                     value={pref.value}
                                     onChange={(e) => pref.onChange(e.target.value)}
-                                    className="input-field"
-                                    style={{ width: 140, padding: "10px 12px", fontSize: "13px", background: "var(--bg-secondary)", color: "var(--text-primary)", borderColor: "var(--border-color)", colorScheme: resolvedTheme }}
+                                    className="input-field settings-pref-select"
+                                    style={{ width: 140, padding: "10px 12px", fontSize: "13px", background: "var(--bg-secondary)", color: "var(--text-primary)", borderColor: "var(--border-color)", colorScheme: resolvedTheme, flexShrink: 0 }}
                                 >
                                     {pref.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
@@ -268,7 +263,7 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                                 <button
                                     key={d.value}
                                     onClick={() => setDifficulty(d.value)}
-                                    style={{ padding: "10px", borderRadius: "12px", cursor: "pointer", border: `1.5px solid ${difficulty === d.value ? d.color + "0.55)" : "rgba(255,255,255,0.08)"}`, background: difficulty === d.value ? d.color + "0.12)" : "rgba(255,255,255,0.03)", color: difficulty === d.value ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
+                                    style={{ padding: "8px 4px", borderRadius: "12px", cursor: "pointer", border: `1.5px solid ${difficulty === d.value ? d.color + "0.55)" : "rgba(255,255,255,0.08)"}`, background: difficulty === d.value ? d.color + "0.12)" : "rgba(255,255,255,0.03)", color: difficulty === d.value ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
                                 >
                                     <span style={{ marginRight: "5px" }}>{d.icon}</span>{d.label}
                                 </button>
@@ -304,160 +299,49 @@ function Navbar() {
     const { data: session } = useSession();
 
     return (
-        <nav
-            style={{
-                background: "var(--panel-bg)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                borderBottom: "1px solid var(--panel-border)",
-                position: "sticky",
-                top: 0,
-                zIndex: 100,
-                height: "70px",
-            }}
-        >
-            <div
-                style={{
-                    maxWidth: "1200px",
-                    margin: "0 auto",
-                    padding: "0 24px",
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                }}
-            >
-                <Link href="/" style={{ textDecoration: "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <div
-                            style={{
-                                width: "38px",
-                                height: "38px",
-                                borderRadius: "12px",
-                                background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "20px",
-                                boxShadow: "0 0 22px rgba(139, 92, 246, 0.5)",
-                            }}
-                        >
-                            🧠
-                        </div>
-                        <span
-                            style={{
-                                fontSize: "21px",
-                                fontWeight: 900,
-                                background: "linear-gradient(135deg, #A78BFA, #F472B6)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                backgroundClip: "text",
-                                letterSpacing: "-0.3px",
-                            }}
-                        >
-                            QuizAI
-                        </span>
+        <nav className="navbar">
+            <div className="navbar-container">
+                <Link href="/" className="navbar-logo-link">
+                    <div className="navbar-logo-wrapper">
+                        <div className="navbar-logo-icon">🧠</div>
+                        <span className="navbar-logo-text">QuizAI</span>
                     </div>
                 </Link>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div className="navbar-actions">
                     {session ? (
                         <>
-                            <Link href="/upload" style={{ textDecoration: "none" }}>
-                                <button
-                                    style={{
-                                        background: "transparent",
-                                        border: "none",
-                                        color: "var(--text-secondary)",
-                                        padding: "8px 18px",
-                                        borderRadius: "999px",
-                                        cursor: "pointer",
-                                        fontSize: "14px",
-                                        fontWeight: 700,
-                                        fontFamily: "Nunito, sans-serif",
-                                        transition: "all 0.2s ease",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "var(--text-primary)";
-                                        (e.target as HTMLButtonElement).style.background = "rgba(139,92,246,0.1)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "var(--text-secondary)";
-                                        (e.target as HTMLButtonElement).style.background = "transparent";
-                                    }}
-                                >
-                                    ✨ New Quiz
+                            <Link href="/upload" className="navbar-link">
+                                <button className="navbar-btn-action">
+                                    <span className="navbar-btn-emoji">✨</span>
+                                    <span className="navbar-btn-text">New Quiz</span>
                                 </button>
                             </Link>
-                            <Link href="/dashboard" style={{ textDecoration: "none" }}>
-                                <button
-                                    style={{
-                                        background: "transparent",
-                                        border: "none",
-                                        color: "var(--text-secondary)",
-                                        padding: "8px 18px",
-                                        borderRadius: "999px",
-                                        cursor: "pointer",
-                                        fontSize: "14px",
-                                        fontWeight: 700,
-                                        fontFamily: "Nunito, sans-serif",
-                                        transition: "all 0.2s ease",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "var(--text-primary)";
-                                        (e.target as HTMLButtonElement).style.background = "rgba(139,92,246,0.1)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        (e.target as HTMLButtonElement).style.color = "var(--text-secondary)";
-                                        (e.target as HTMLButtonElement).style.background = "transparent";
-                                    }}
-                                >
-                                    📊 Dashboard
+                            <Link href="/dashboard" className="navbar-link">
+                                <button className="navbar-btn-action">
+                                    <span className="navbar-btn-emoji">📊</span>
+                                    <span className="navbar-btn-text">Dashboard</span>
                                 </button>
                             </Link>
-                            <div
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                    marginLeft: "6px",
-                                    padding: "6px 14px",
-                                    background: "rgba(139, 92, 246, 0.08)",
-                                    border: "1.5px solid rgba(139,92,246,0.25)",
-                                    borderRadius: "999px",
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        width: "28px",
-                                        height: "28px",
-                                        borderRadius: "50%",
-                                        background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        fontSize: "12px",
-                                        fontWeight: 800,
-                                        color: "white",
-                                    }}
-                                >
+                            <div className="navbar-user-badge">
+                                <div className="navbar-user-avatar">
                                     {session.user?.name?.[0]?.toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
                                 </div>
-                                <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                <span className="navbar-user-name">
                                     {session.user?.name || session.user?.email}
                                 </span>
                             </div>
                         </>
                     ) : (
                         <>
-                            <Link href="/login" style={{ textDecoration: "none" }}>
-                                <button className="btn-secondary" style={{ padding: "9px 22px", fontSize: "14px" }}>
+                            <Link href="/login" className="navbar-link">
+                                <button className="btn-secondary navbar-auth-btn">
                                     Sign In
                                 </button>
                             </Link>
-                            <Link href="/register" style={{ textDecoration: "none" }}>
-                                <button className="btn-primary" style={{ padding: "9px 22px", fontSize: "14px" }}>
-                                    🚀 Get Started
+                            <Link href="/register" className="navbar-link">
+                                <button className="btn-primary navbar-auth-btn">
+                                    🚀 <span className="navbar-btn-text">Get Started</span>
                                 </button>
                             </Link>
                         </>

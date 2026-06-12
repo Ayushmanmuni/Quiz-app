@@ -123,8 +123,8 @@ export default function HomePage() {
                 </div>
 
                 {/* Hero Visual */}
-                <div className="animate-float" style={{ marginTop: "72px", display: "inline-block", position: "relative" }}>
-                    <div className="glass-strong" style={{ padding: "28px 32px", maxWidth: "580px", margin: "0 auto", textAlign: "left", boxShadow: "0 40px 120px rgba(0,0,0,0.5), 0 0 60px rgba(139, 92, 246, 0.15)" }}>
+                <div className="animate-float" style={{ marginTop: "72px", display: "block", position: "relative", width: "100%" }}>
+                    <div className="glass-strong" style={{ padding: "clamp(16px, 5vw, 32px)", maxWidth: "580px", width: "100%", margin: "0 auto", textAlign: "left", boxShadow: "0 40px 120px rgba(0,0,0,0.5), 0 0 60px rgba(139, 92, 246, 0.15)", boxSizing: "border-box" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
                             <div style={{ display: "flex", gap: "6px" }}>
                                 <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#F87171" }} />
@@ -133,7 +133,7 @@ export default function HomePage() {
                             </div>
                             <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontFamily: "monospace" }}>AI Quiz Generator 🧠</span>
                         </div>
-                        <div style={{ background: "rgba(139, 92, 246, 0.07)", border: "1px solid rgba(139, 92, 246, 0.22)", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                        <div style={{ background: "rgba(139, 92, 246, 0.07)", border: "1px solid rgba(139, 92, 246, 0.22)", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", fontSize: "13px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             📄 &nbsp;quantum_physics_notes.pdf &nbsp;<span style={{ color: "#34D399", fontWeight: 700 }}>✓ Extracted 4,200 words</span>
                         </div>
                         <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "14px" }}>Q3: What does the Heisenberg Uncertainty Principle state?</p>
@@ -145,8 +145,8 @@ export default function HomePage() {
                         ].map((o) => (
                             <div key={o.opt} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "10px", marginBottom: "8px", border: `1px solid ${o.correct ? "rgba(52,211,153,0.45)" : "rgba(255,255,255,0.06)"}`, background: o.correct ? "rgba(52,211,153,0.09)" : "rgba(255,255,255,0.02)", fontSize: "13px", color: o.correct ? "#34D399" : "var(--text-secondary)" }}>
                                 <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: o.correct ? "rgba(52,211,153,0.2)" : `rgba(0,0,0,0)`, border: `1px solid ${o.color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: o.color, flexShrink: 0 }}>{o.opt}</span>
-                                {o.text}
-                                {o.correct && <span style={{ marginLeft: "auto", fontWeight: 800 }}>✓</span>}
+                                <span style={{ wordBreak: "break-word" }}>{o.text}</span>
+                                {o.correct && <span style={{ marginLeft: "auto", fontWeight: 800, flexShrink: 0 }}>✓</span>}
                             </div>
                         ))}
                     </div>
@@ -159,7 +159,7 @@ export default function HomePage() {
                     <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, marginBottom: "12px" }}>How it <span className="gradient-text-blue">works</span> ✨</h2>
                     <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: 500 }}>From document to quiz in under 30 seconds</p>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), 1fr))", gap: "20px" }}>
                     {steps.map((step, i) => (
                         <div key={i} className="glass card-hover" style={{ padding: "28px 24px", position: "relative", overflow: "hidden", borderColor: step.border }}>
                             <div style={{ fontSize: "42px", fontWeight: 900, color: step.border.replace("0.3", "0.12"), position: "absolute", top: "12px", right: "16px", fontFamily: "monospace", lineHeight: 1 }}>{step.num}</div>
@@ -176,7 +176,7 @@ export default function HomePage() {
                 <div style={{ textAlign: "center", marginBottom: "60px" }}>
                     <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, marginBottom: "12px" }}>Everything you <span className="gradient-text">need to learn</span></h2>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))", gap: "20px" }}>
                     {features.map((f, i) => (
                         <div key={i} className="glass card-hover" style={{ padding: "28px", display: "flex", flexDirection: "column", gap: "14px" }}>
                             <div className={`icon-circle icon-circle-${f.color}`}>{f.icon}</div>
@@ -189,7 +189,7 @@ export default function HomePage() {
 
             {/* Stats strip */}
             <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px 80px", position: "relative", zIndex: 1 }}>
-                <div className="glass" style={{ padding: "32px 40px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "24px", textAlign: "center" }}>
+                <div className="glass" style={{ padding: "clamp(16px, 4vw, 32px) clamp(20px, 5vw, 40px)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 100%), 1fr))", gap: "24px", textAlign: "center" }}>
                     {[
                         { val: "10s", label: "Quiz generated", emoji: "⚡" },
                         { val: "3", label: "Difficulty levels", emoji: "🎯" },
@@ -207,7 +207,7 @@ export default function HomePage() {
 
             {/* CTA */}
             <section style={{ maxWidth: "700px", margin: "0 auto", padding: "40px 24px 100px", textAlign: "center", position: "relative", zIndex: 1 }}>
-                <div className="glass-strong animate-pulse-glow" style={{ padding: "60px 40px" }}>
+                <div className="glass-strong animate-pulse-glow" style={{ padding: "clamp(30px, 8vw, 60px) clamp(20px, 6vw, 40px)", boxSizing: "border-box", width: "100%" }}>
                     <div style={{ fontSize: "48px", marginBottom: "16px" }}>🚀</div>
                     <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, marginBottom: "16px" }}>
                         {session ? "Ready to test your knowledge?" : "Ready to level up your learning?"}
