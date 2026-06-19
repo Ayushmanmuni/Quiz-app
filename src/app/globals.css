@@ -5,57 +5,86 @@
 @tailwind utilities;
 
 :root {
-    /* --- Backgrounds: warm deep purple-navy --- */
-    --bg-primary: #0E0B1A;
-    --bg-secondary: #15112A;
-    --bg-tertiary: #1C1740;
-    --bg-card: rgba(255, 255, 255, 0.04);
-    --panel-bg: rgba(21, 17, 42, 0.96);
-    --panel-border: rgba(255, 255, 255, 0.12);
-    --border-color: rgba(255, 255, 255, 0.09);
-    --border-glow: rgba(139, 92, 246, 0.35);
+    /* --- WrestleMania 32 Themed Backgrounds: Deep Starfield Navy & Deep Red --- */
+    --bg-primary: #050410;
+    --bg-secondary: #180408;
+    --bg-tertiary: #0D0822;
+    --bg-card: rgba(255, 255, 255, 0.03);
+    --panel-bg: rgba(5, 4, 16, 0.65);
+    --panel-border: rgba(0, 229, 255, 0.12);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-glow: rgba(0, 229, 255, 0.25);
 
-    /* --- Text --- */
-    --text-primary: #EDE9FF;
-    --text-secondary: #9B8EC4;
+    /* --- Text: Championship Silver & Star White --- */
+    --text-primary: #FFFFFF;
+    --text-secondary: #8E8AAB;
 
-    /* --- Primary: vibrant violet --- */
-    --accent: #8B5CF6;
-    --accent-light: #A78BFA;
-    --accent-glow: rgba(139, 92, 246, 0.18);
+    /* --- Primary: WrestleMania Electric Blue & Gold --- */
+    --accent: #00E5FF;
+    --accent-light: #FBBF24;
+    --accent-glow: rgba(0, 229, 255, 0.15);
 
     /* --- Fun accent palette --- */
-    --fun-coral: #F87171;
+    --fun-coral: #FF2E63;
     --fun-amber: #FBBF24;
-    --fun-teal: #34D399;
-    --fun-sky: #38BDF8;
+    --fun-teal: #08F7A5;
+    --fun-sky: #00E5FF;
     --fun-pink: #EC4899;
 
     /* --- Status --- */
-    --success: #34D399;
-    --error: #F87171;
+    --success: #08F7A5;
+    --error: #FF2E63;
     --warning: #FBBF24;
 
     /* --- Quiz option colors --- */
-    --opt-a: #38BDF8;
+    --opt-a: #00E5FF;
     --opt-b: #FBBF24;
-    --opt-c: #F87171;
-    --opt-d: #34D399;
+    --opt-c: #FF2E63;
+    --opt-d: #08F7A5;
+
+    /* --- Component Gradients & Inputs --- */
+    --btn-primary-bg: linear-gradient(135deg, #FBBF24 0%, #FF2E63 100%);
+    --gradient-text-bg: linear-gradient(135deg, #FBBF24 0%, #FF2E63 50%, #00E5FF 100%);
+    --gradient-text-blue-bg: linear-gradient(135deg, #00E5FF 0%, #8B5CF6 100%);
+    --progress-bg: linear-gradient(90deg, #00E5FF, #FF2E63, #FBBF24);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --option-bg: rgba(255, 255, 255, 0.04);
 }
 
-/* Light theme */
+/* Light theme: shades of WrestleMania blue and red with pure black text */
 html.theme-light {
-    --bg-primary: #FBF8FF;
-    --bg-secondary: #FFFFFF;
-    --bg-tertiary: #F0EBFF;
-    --bg-card: rgba(139, 92, 246, 0.05);
-    --panel-bg: rgba(255, 255, 255, 0.97);
-    --panel-border: rgba(139, 92, 246, 0.2);
-    --border-color: rgba(139, 92, 246, 0.14);
-    --border-glow: rgba(139, 92, 246, 0.28);
-    --text-primary: #1A0A3D;
-    --text-secondary: rgba(26, 10, 61, 0.55);
-    --accent-glow: rgba(139, 92, 246, 0.1);
+    --bg-primary: #EBF1FC; /* Ice-blue pastel tint */
+    --bg-secondary: #FDEBEB; /* Blush-red pastel tint */
+    --bg-tertiary: #DCE6F7;
+    --bg-card: rgba(30, 64, 175, 0.03);
+    --panel-bg: rgba(255, 255, 255, 0.7); /* Premium white glass */
+    --panel-border: rgba(30, 64, 175, 0.15);
+    --border-color: rgba(30, 64, 175, 0.12);
+    --border-glow: rgba(220, 38, 38, 0.22);
+    
+    /* Pure black primary text, high-contrast dark secondary text */
+    --text-primary: #000000;
+    --text-secondary: rgba(0, 0, 0, 0.7);
+
+    --accent: #1E40AF; /* deep royal blue accent */
+    --accent-light: #B45309; /* deep gold-amber accent */
+    --accent-glow: rgba(30, 64, 175, 0.08);
+
+    --btn-primary-bg: linear-gradient(135deg, #B45309 0%, #DC2626 100%);
+    --gradient-text-bg: linear-gradient(135deg, #1E40AF 0%, #DC2626 100%);
+    --gradient-text-blue-bg: linear-gradient(135deg, #1E40AF 0%, #0369A1 100%);
+    --progress-bg: linear-gradient(90deg, #1E40AF, #DC2626);
+    --input-bg: rgba(255, 255, 255, 0.85);
+    --option-bg: rgba(255, 255, 255, 0.75);
+}
+
+/* Helper classes to guarantee icon padding space on input fields */
+.input-field-icon-left {
+    padding-left: 48px !important;
+}
+
+.input-field-icon-right {
+    padding-right: 48px !important;
 }
 
 * {
@@ -69,7 +98,8 @@ html {
 }
 
 body {
-    background: var(--bg-primary);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    background-attachment: fixed;
     color: var(--text-primary);
     font-family: 'Nunito', sans-serif;
     overflow-x: hidden;
@@ -107,14 +137,14 @@ body {
 
 /* ---- Text gradients ---- */
 .gradient-text {
-    background: linear-gradient(135deg, #A78BFA 0%, #F472B6 50%, #FBBF24 100%);
+    background: var(--gradient-text-bg);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .gradient-text-blue {
-    background: linear-gradient(135deg, #38BDF8 0%, #8B5CF6 100%);
+    background: var(--gradient-text-blue-bg);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -122,7 +152,7 @@ body {
 
 /* ---- Buttons ---- */
 .btn-primary {
-    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+    background: var(--btn-primary-bg);
     color: white;
     border: none;
     border-radius: 999px;
@@ -190,7 +220,7 @@ body {
 /* ---- Input fields ---- */
 .input-field {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--input-bg);
     border: 1.5px solid var(--border-color);
     border-radius: 14px;
     padding: 14px 16px;
@@ -204,7 +234,7 @@ body {
 
 .input-field:focus {
     border-color: var(--accent);
-    background: rgba(139, 92, 246, 0.06);
+    background: var(--input-bg);
     box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
 }
 
@@ -244,7 +274,7 @@ body {
 .option-btn {
     width: 100%;
     text-align: left;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--option-bg);
     border: 1.5px solid var(--border-color);
     border-radius: 14px;
     padding: 16px 20px;
@@ -332,7 +362,7 @@ body {
 }
 
 .progress-fill {
-    background: linear-gradient(90deg, #8B5CF6, #EC4899, #FBBF24);
+    background: var(--progress-bg);
     background-size: 200% 100%;
     height: 100%;
     border-radius: 999px;

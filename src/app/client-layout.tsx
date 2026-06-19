@@ -5,6 +5,25 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { SessionProvider } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+    Sparkles, 
+    LayoutDashboard, 
+    LogIn, 
+    LogOut, 
+    Settings, 
+    Plus, 
+    Moon, 
+    Sun, 
+    Check,
+    FolderPlus,
+    User,
+    UserCheck,
+    LineChart,
+    ChevronRight,
+    RotateCcw,
+    Rocket
+} from "lucide-react";
 
 type ThemeMode = "dark" | "light";
 type ThemePref = "system" | "dark" | "light";
@@ -97,7 +116,7 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
     useClickOutside(containerRef, () => setOpen(false), open);
 
     const accountLabel = useMemo(() => {
-        if (!session?.user) return "Guest";
+        if (!session?.user) return "Guest Account";
         return session.user.name || session.user.email || "Account";
     }, [session]);
 
@@ -108,7 +127,7 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
     };
 
     const bubbleMetrics = useMemo(() => {
-        const px = bubbleSize === "small" ? 34 : bubbleSize === "large" ? 46 : 40;
+        const px = bubbleSize === "small" ? 36 : bubbleSize === "large" ? 48 : 42;
         const font = bubbleSize === "small" ? 14 : bubbleSize === "large" ? 18 : 16;
         const pad = bubbleSize === "small" ? 12 : bubbleSize === "large" ? 18 : 16;
         return { px, font, pad };
@@ -149,148 +168,204 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
             }
         >
             {variant === "floating" ? (
-                <button
+                <motion.button
                     onClick={() => setOpen((v) => !v)}
+                    whileHover={{ scale: 1.05, rotate: 15 }}
+                    whileTap={{ scale: 0.95 }}
                     style={{
                         width: bubbleMetrics.px,
                         height: bubbleMetrics.px,
                         borderRadius: 999,
-                        background: "linear-gradient(135deg, rgba(139,92,246,0.3), rgba(236,72,153,0.2))",
-                        border: "1.5px solid rgba(139,92,246,0.4)",
-                        boxShadow: "0 8px 30px rgba(139,92,246,0.35)",
-                        backdropFilter: "blur(10px)",
-                        WebkitBackdropFilter: "blur(10px)",
+                        background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.15))",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        boxShadow: "0 8px 32px rgba(139,92,246,0.25)",
+                        backdropFilter: "blur(12px)",
+                        WebkitBackdropFilter: "blur(12px)",
                         color: "var(--text-primary)",
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: bubbleMetrics.font,
-                        transition: "all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                        transition: "border-color 0.2s ease, box-shadow 0.2s ease",
                     }}
                     aria-haspopup="menu"
                     aria-expanded={open}
                     title="Settings"
                 >
-                    ⚙️
-                </button>
+                    <Settings className="w-5 h-5 text-indigo-300" />
+                </motion.button>
             ) : (
-                <button
+                <motion.button
                     onClick={() => setOpen((v) => !v)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     className="btn-secondary"
                     style={{ padding: "9px 14px", borderRadius: "999px", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "14px" }}
                     aria-haspopup="menu"
                     aria-expanded={open}
                     title="Settings"
                 >
-                    <span style={{ fontSize: "16px" }}>⚙️</span>
+                    <Settings className="w-4 h-4 text-indigo-300" />
                     <span style={{ opacity: 0.9 }}>Settings</span>
-                </button>
+                </motion.button>
             )}
 
-            {open && (
-                <div
-                    role="menu"
-                    aria-label="Settings menu"
-                    className="glass-strong settings-panel"
-                    style={{
-                        ...panelPlacementStyle,
-                        padding: bubbleMetrics.pad,
-                    }}
-                >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>Account</div>
-                            <div style={{ fontSize: "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                {accountLabel}
-                            </div>
-                        </div>
-                        {session ? (
-                            <button
-                                onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
-                                style={{ background: "rgba(248,113,113,0.12)", border: "1.5px solid rgba(248,113,113,0.3)", color: "#F87171", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif", flexShrink: 0 }}
-                            >
-                                Logout
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => { setOpen(false); signIn(undefined, { callbackUrl: "/dashboard" }); }}
-                                style={{ background: "rgba(52,211,153,0.12)", border: "1.5px solid rgba(52,211,153,0.3)", color: "#34D399", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif", flexShrink: 0 }}
-                            >
-                                Login
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="divider" style={{ margin: "12px 0" }} />
-
-                    <div style={{ marginBottom: "14px" }}>
-                        <div style={{ fontWeight: 900, fontSize: "15px", marginBottom: "10px" }}>Preferences</div>
-
-                        {[
-                            { label: "Theme", desc: "Select your theme preference.", value: themePref, onChange: (v: string) => setThemePref(v as ThemePref), options: [{ value: "system", label: "System" }, { value: "dark", label: "Dark" }, { value: "light", label: "Light" }] },
-                            { label: "Position", desc: "Adjust the placement of your tools.", value: bubblePosition, onChange: (v: string) => setBubblePosition(v as BubblePosition), options: [{ value: "bottom-left", label: "Bottom Left" }, { value: "bottom-right", label: "Bottom Right" }, { value: "top-left", label: "Top Left" }, { value: "top-right", label: "Top Right" }] },
-                            { label: "Size", desc: "Adjust the size of the tools.", value: bubbleSize, onChange: (v: string) => setBubbleSize(v as BubbleSize), options: [{ value: "small", label: "Small" }, { value: "medium", label: "Medium" }, { value: "large", label: "Large" }] },
-                        ].map((pref) => (
-                            <div key={pref.label} className="settings-pref-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 0" }}>
-                                <div style={{ minWidth: 0, flex: 1 }}>
-                                    <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px" }}>{pref.label}</div>
-                                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pref.desc}</div>
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        role="menu"
+                        aria-label="Settings menu"
+                        className="glass-strong settings-panel absolute"
+                        style={{
+                            ...panelPlacementStyle,
+                            padding: bubbleMetrics.pad,
+                            width: "300px",
+                            zIndex: 1000,
+                        }}
+                    >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                                <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px", display: "flex", alignItems: "center", gap: "6px" }}>
+                                    <User className="w-4 h-4 text-indigo-400" />
+                                    <span>Account</span>
                                 </div>
-                                <select
-                                    value={pref.value}
-                                    onChange={(e) => pref.onChange(e.target.value)}
-                                    className="input-field settings-pref-select"
-                                    style={{ width: 140, padding: "10px 12px", fontSize: "13px", background: "var(--bg-secondary)", color: "var(--text-primary)", borderColor: "var(--border-color)", colorScheme: resolvedTheme, flexShrink: 0 }}
-                                >
-                                    {pref.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                                </select>
+                                <div style={{ fontSize: "12px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                    {accountLabel}
+                                </div>
                             </div>
-                        ))}
-                    </div>
-
-                    <div className="divider" style={{ margin: "12px 0" }} />
-
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "14px" }}>
-                        <button onClick={() => go("/dashboard")} className="btn-secondary" style={{ padding: "10px 12px", fontSize: "13px", justifyContent: "center" }}>📈 Progress</button>
-                        <button onClick={() => go("/upload")} className="btn-primary" style={{ padding: "10px 12px", fontSize: "13px", justifyContent: "center" }}>+ New Quiz</button>
-                    </div>
-
-                    <div style={{ marginBottom: "14px" }}>
-                        <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "6px" }}>Default difficulty</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
-                            {([{ value: "easy", label: "Easy", icon: "🟢", color: "rgba(52,211,153," }, { value: "medium", label: "Medium", icon: "🟡", color: "rgba(251,191,36," }, { value: "hard", label: "Hard", icon: "🔴", color: "rgba(248,113,113," }] as const).map((d) => (
+                            {session ? (
                                 <button
-                                    key={d.value}
-                                    onClick={() => setDifficulty(d.value)}
-                                    style={{ padding: "8px 4px", borderRadius: "12px", cursor: "pointer", border: `1.5px solid ${difficulty === d.value ? d.color + "0.55)" : "rgba(255,255,255,0.08)"}`, background: difficulty === d.value ? d.color + "0.12)" : "rgba(255,255,255,0.03)", color: difficulty === d.value ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif" }}
+                                    onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
+                                    style={{ background: "rgba(248,113,113,0.12)", border: "1.5px solid rgba(248,113,113,0.3)", color: "#F87171", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif", flexShrink: 0, display: "flex", alignItems: "center", gap: "4px" }}
                                 >
-                                    <span style={{ marginRight: "5px" }}>{d.icon}</span>{d.label}
+                                    <LogOut className="w-3 h-3" />
+                                    Logout
                                 </button>
+                            ) : (
+                                <button
+                                    onClick={() => { setOpen(false); signIn(undefined, { callbackUrl: "/dashboard" }); }}
+                                    style={{ background: "rgba(52,211,153,0.12)", border: "1.5px solid rgba(52,211,153,0.3)", color: "#34D399", padding: "8px 14px", borderRadius: "999px", cursor: "pointer", fontWeight: 800, fontSize: "12px", fontFamily: "Nunito, sans-serif", flexShrink: 0, display: "flex", alignItems: "center", gap: "4px" }}
+                                >
+                                    <LogIn className="w-3 h-3" />
+                                    Login
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="divider" style={{ margin: "12px 0", height: "1px", background: "var(--border-color)" }} />
+
+                        <div style={{ marginBottom: "14px" }}>
+                            <div style={{ fontWeight: 900, fontSize: "15px", marginBottom: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                                <Sparkles className="w-4 h-4 text-violet-400" />
+                                <span>Preferences</span>
+                            </div>
+
+                            {[
+                                { 
+                                    label: "Theme", 
+                                    desc: "Select visual appearance", 
+                                    value: themePref, 
+                                    onChange: (v: string) => setThemePref(v as ThemePref), 
+                                    options: [{ value: "system", label: "System" }, { value: "dark", label: "Dark" }, { value: "light", label: "Light" }] 
+                                },
+                                { 
+                                    label: "Position", 
+                                    desc: "Position of floating tools", 
+                                    value: bubblePosition, 
+                                    onChange: (v: string) => setBubblePosition(v as BubblePosition), 
+                                    options: [{ value: "bottom-left", label: "Bottom Left" }, { value: "bottom-right", label: "Bottom Right" }, { value: "top-left", label: "Top Left" }, { value: "top-right", label: "Top Right" }] 
+                                },
+                                { 
+                                    label: "Size", 
+                                    desc: "Floating bubble size", 
+                                    value: bubbleSize, 
+                                    onChange: (v: string) => setBubbleSize(v as BubbleSize), 
+                                    options: [{ value: "small", label: "Small" }, { value: "medium", label: "Medium" }, { value: "large", label: "Large" }] 
+                                },
+                            ].map((pref) => (
+                                <div key={pref.label} className="settings-pref-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "8px 0" }}>
+                                    <div style={{ minWidth: 0, flex: 1 }}>
+                                        <div style={{ fontWeight: 800, fontSize: "13px", marginBottom: "1px" }}>{pref.label}</div>
+                                        <div style={{ fontSize: "11px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pref.desc}</div>
+                                    </div>
+                                    <select
+                                        value={pref.value}
+                                        onChange={(e) => pref.onChange(e.target.value)}
+                                        className="input-field settings-pref-select"
+                                        style={{ width: 130, padding: "8px 10px", borderRadius: "10px", fontSize: "12px", background: "var(--bg-secondary)", color: "var(--text-primary)", borderColor: "var(--border-color)", colorScheme: resolvedTheme, flexShrink: 0 }}
+                                    >
+                                        {pref.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                    </select>
+                                </div>
                             ))}
                         </div>
-                        <div style={{ marginTop: "6px", fontSize: "11px", color: "var(--text-secondary)" }}>
-                            Current theme: <span style={{ fontWeight: 800, color: "var(--accent-light)" }}>{resolvedTheme}</span>
-                        </div>
-                    </div>
 
-                    <div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "6px" }}>
-                            <div style={{ fontWeight: 800, fontSize: "14px" }}>Quick notes</div>
-                            <button onClick={() => setNotes("")} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-secondary)", borderRadius: "999px", padding: "5px 10px", cursor: "pointer", fontSize: "12px", fontWeight: 700, fontFamily: "Nunito, sans-serif" }}>Clear</button>
+                        <div className="divider" style={{ margin: "12px 0", height: "1px", background: "var(--border-color)" }} />
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "14px" }}>
+                            <button 
+                                onClick={() => go("/dashboard")} 
+                                className="btn-secondary" 
+                                style={{ padding: "8px 10px", borderRadius: "999px", fontSize: "12px", justifyContent: "center", display: "flex", alignItems: "center", gap: "6px" }}
+                            >
+                                <LineChart className="w-3.5 h-3.5" />
+                                Progress
+                            </button>
+                            <button 
+                                onClick={() => go("/upload")} 
+                                className="btn-primary" 
+                                style={{ padding: "8px 10px", borderRadius: "999px", fontSize: "12px", justifyContent: "center", display: "flex", alignItems: "center", gap: "6px" }}
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                New Quiz
+                            </button>
                         </div>
-                        <textarea
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            className="input-field"
-                            rows={4}
-                            placeholder="Save study reminders, weak topics, formulas…"
-                            style={{ resize: "vertical", fontSize: "13px", lineHeight: 1.5 }}
-                        />
-                        <div style={{ marginTop: "6px", fontSize: "11px", color: "var(--text-secondary)" }}>Saved locally in this browser.</div>
-                    </div>
-                </div>
-            )}
+
+                        <div style={{ marginBottom: "14px" }}>
+                            <div style={{ fontWeight: 800, fontSize: "13px", marginBottom: "8px" }}>Default difficulty</div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "6px" }}>
+                                {([
+                                    { value: "easy", label: "Easy", color: "rgba(52,211,153," }, 
+                                    { value: "medium", label: "Medium", color: "rgba(251,191,36," }, 
+                                    { value: "hard", label: "Hard", color: "rgba(248,113,113," }
+                                ] as const).map((d) => (
+                                    <button
+                                        key={d.value}
+                                        onClick={() => setDifficulty(d.value)}
+                                        style={{ padding: "6px 2px", borderRadius: "10px", cursor: "pointer", border: `1.5px solid ${difficulty === d.value ? d.color + "0.55)" : "rgba(255,255,255,0.08)"}`, background: difficulty === d.value ? d.color + "0.12)" : "rgba(255,255,255,0.03)", color: difficulty === d.value ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: 800, fontSize: "11px", fontFamily: "Nunito, sans-serif" }}
+                                    >
+                                        {d.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <div style={{ marginTop: "6px", fontSize: "10px", color: "var(--text-secondary)" }}>
+                                Current theme: <span style={{ fontWeight: 800, color: "var(--accent-light)" }}>{resolvedTheme}</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "6px" }}>
+                                <div style={{ fontWeight: 800, fontSize: "13px" }}>Quick notes</div>
+                                <button onClick={() => setNotes("")} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-secondary)", borderRadius: "999px", padding: "2px 8px", cursor: "pointer", fontSize: "10px", fontWeight: 700, fontFamily: "Nunito, sans-serif" }}>Clear</button>
+                            </div>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                className="input-field"
+                                rows={3}
+                                placeholder="Study reminders, key formulas..."
+                                style={{ resize: "vertical", fontSize: "12px", lineHeight: 1.4, padding: "8px 10px", borderRadius: "10px" }}
+                            />
+                            <div style={{ marginTop: "4px", fontSize: "10px", color: "var(--text-secondary)" }}>Saved locally in this browser.</div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
@@ -299,12 +374,21 @@ function Navbar() {
     const { data: session } = useSession();
 
     return (
-        <nav className="navbar">
+        <motion.nav 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="navbar"
+        >
             <div className="navbar-container">
                 <Link href="/" className="navbar-logo-link">
-                    <div className="navbar-logo-wrapper">
-                        <div className="navbar-logo-icon">🧠</div>
-                        <span className="navbar-logo-text">QuizAI</span>
+                    <div className="navbar-logo-wrapper flex items-center gap-2">
+                        <div className="navbar-logo-icon flex items-center justify-center p-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                            <Sparkles className="w-5 h-5 animate-pulse" />
+                        </div>
+                        <span className="navbar-logo-text font-black text-xl tracking-tight bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">
+                            QuizAI
+                        </span>
                     </div>
                 </Link>
 
@@ -312,43 +396,61 @@ function Navbar() {
                     {session ? (
                         <>
                             <Link href="/upload" className="navbar-link">
-                                <button className="navbar-btn-action">
-                                    <span className="navbar-btn-emoji">✨</span>
+                                <motion.button 
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="navbar-btn-action flex items-center gap-1.5"
+                                >
+                                    <Plus className="w-4 h-4 text-violet-400" />
                                     <span className="navbar-btn-text">New Quiz</span>
-                                </button>
+                                </motion.button>
                             </Link>
                             <Link href="/dashboard" className="navbar-link">
-                                <button className="navbar-btn-action">
-                                    <span className="navbar-btn-emoji">📊</span>
+                                <motion.button 
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="navbar-btn-action flex items-center gap-1.5"
+                                >
+                                    <LayoutDashboard className="w-4 h-4 text-indigo-400" />
                                     <span className="navbar-btn-text">Dashboard</span>
-                                </button>
+                                </motion.button>
                             </Link>
-                            <div className="navbar-user-badge">
-                                <div className="navbar-user-avatar">
-                                    {session.user?.name?.[0]?.toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
-                                </div>
-                                <span className="navbar-user-name">
-                                    {session.user?.name || session.user?.email}
-                                </span>
-                            </div>
+                             <div className="navbar-user-badge flex items-center gap-2 border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                 <div className="navbar-user-avatar w-6 h-6 rounded-full bg-gradient-to-tr from-violet-500 to-indigo-500 text-white flex items-center justify-center text-xs font-bold shadow-md shadow-indigo-500/10">
+                                     {session.user?.name?.[0]?.toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
+                                 </div>
+                                 <span className="navbar-user-name text-sm font-medium text-[var(--text-primary)]/90">
+                                     {session.user?.name || session.user?.email}
+                                 </span>
+                             </div>
                         </>
                     ) : (
                         <>
                             <Link href="/login" className="navbar-link">
-                                <button className="btn-secondary navbar-auth-btn">
-                                    Sign In
-                                </button>
+                                <motion.button 
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="btn-secondary navbar-auth-btn flex items-center gap-1.5"
+                                >
+                                    <LogIn className="w-4 h-4 text-indigo-400" />
+                                    Login
+                                </motion.button>
                             </Link>
                             <Link href="/register" className="navbar-link">
-                                <button className="btn-primary navbar-auth-btn">
-                                    🚀 <span className="navbar-btn-text">Get Started</span>
-                                </button>
+                                <motion.button 
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="btn-primary navbar-auth-btn flex items-center gap-1.5"
+                                >
+                                    <Rocket className="w-4 h-4" />
+                                    <span className="navbar-btn-text">Get Started</span>
+                                </motion.button>
                             </Link>
                         </>
                     )}
                 </div>
             </div>
-        </nav>
+        </motion.nav>
     );
 }
 

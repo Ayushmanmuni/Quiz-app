@@ -3,18 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { PageBackground } from "@/components/ui/page-background";
+import { GlassCardStrong } from "@/components/ui/glass-card";
+import { User, Mail, Lock, ShieldCheck, ArrowRight, ShieldAlert, Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
-        if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
+        if (form.password.length < 8) { setError("Password must be at least 8 characters."); return; }
         setLoading(true);
         const res = await fetch("/api/register", {
             method: "POST",
@@ -31,43 +37,37 @@ export default function RegisterPage() {
     };
 
     return (
-        <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
-            <div className="bg-mesh" />
-            <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 70px)", padding: "40px 24px" }}>
-                <div className="glass-strong animate-slide-up" style={{ width: "100%", maxWidth: "440px", padding: "48px 40px" }}>
-                    <div style={{ textAlign: "center", marginBottom: "36px" }}>
-                        <div
-                            style={{
-                                width: "64px",
-                                height: "64px",
-                                borderRadius: "20px",
-                                background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "32px",
-                                margin: "0 auto 20px",
-                                boxShadow: "0 0 35px rgba(139, 92, 246, 0.5)",
-                            }}
-                            className="animate-bounce"
+        <div className="relative min-h-[calc(100vh-70px)]">
+            <PageBackground variant="auth" />
+            <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-70px)] px-6 py-12">
+                <GlassCardStrong className="w-full max-w-[460px] p-8 md:p-10 border-white/[0.08]" hover={false} delay={0.1}>
+                    <div className="text-center mb-8">
+                        <motion.div
+                            initial={{ scale: 0.8, y: 10 }}
+                            animate={{ scale: 1, y: 0 }}
+                            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                            className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-violet-500 to-rose-500 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/20"
                             role="img"
                             aria-hidden="true"
                         >
-                            🚀
-                        </div>
-                        <h1 style={{ fontSize: "28px", fontWeight: 900, marginBottom: "8px" }}>Create your account <span aria-hidden="true">🎉</span></h1>
-                        <p style={{ color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600 }}>Free forever. No credit card required.</p>
+                            <ShieldCheck className="w-8 h-8 text-white" />
+                        </motion.div>
+                        <h1 className="text-2xl md:text-3xl font-black mb-2 text-[var(--text-primary)]">Signup for QuizAI</h1>
+                        <p className="text-sm text-[var(--text-secondary)] font-semibold">Free forever. No credit card required.</p>
                     </div>
 
                     {error && (
-                        <div
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
                             role="alert"
                             aria-live="polite"
                             aria-atomic="true"
-                            style={{ background: "rgba(248, 113, 113, 0.1)", border: "1.5px solid rgba(248, 113, 113, 0.35)", borderRadius: "14px", padding: "12px 16px", marginBottom: "20px", fontSize: "14px", color: "#F87171", display: "flex", alignItems: "center", gap: "8px", fontWeight: 600 }}
+                            className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 mb-6 text-sm text-rose-400 flex items-start gap-2.5 font-semibold"
                         >
-                            <span aria-hidden="true">⚠️</span> {error}
-                        </div>
+                            <ShieldAlert className="w-5 h-5 flex-shrink-0" />
+                            <span>{error}</span>
+                        </motion.div>
                     )}
 
                     <form
@@ -75,58 +75,168 @@ export default function RegisterPage() {
                         role="form"
                         aria-label="Registration form"
                         noValidate
-                        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+                        className="flex flex-col gap-4"
                     >
-                        {[
-                            { id: "name",     label: "Full Name",        type: "text",     placeholder: "Your awesome name 😊",  key: "name" as const, hint: "Enter your full name" },
-                            { id: "email",    label: "Email Address",    type: "email",    placeholder: "you@example.com",         key: "email" as const, hint: "Enter a valid email address" },
-                            { id: "password", label: "Password",         type: "password", placeholder: "Min. 6 characters 🔒",   key: "password" as const, hint: "At least 6 characters for security" },
-                            { id: "confirm",  label: "Confirm Password", type: "password", placeholder: "Repeat your password",    key: "confirm" as const, hint: "Must match password above" },
-                        ].map((field) => (
-                            <div key={field.id}>
-                                <label
-                                    htmlFor={field.id}
-                                    style={{ display: "block", fontSize: "13px", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "8px" }}
-                                >
-                                    {field.label} <span aria-label="required">*</span>
-                                </label>
+                        <div>
+                            <label
+                                htmlFor="name"
+                                className="block text-xs font-bold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider"
+                            >
+                                Full Name <span aria-label="required" className="text-rose-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <User className="w-5 h-5 text-indigo-400/50 absolute left-4 top-1/2 -translate-y-1/2" />
                                 <input
-                                    type={field.type}
-                                    className="input-field"
-                                    placeholder={field.placeholder}
-                                    value={form[field.key]}
-                                    onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                                    type="text"
+                                    className="input-field input-field-icon-left"
+                                    placeholder="Your awesome name"
+                                    value={form.name}
+                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
                                     required
-                                    id={field.id}
+                                    id="name"
                                     aria-required="true"
-                                    aria-describedby={`${field.id}-hint`}
+                                    aria-describedby="name-hint"
                                 />
-                                <p id={`${field.id}-hint`} style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                                    {field.hint}
-                                </p>
                             </div>
-                        ))}
-                        <button
+                            <p id="name-hint" className="text-[10px] text-[var(--text-secondary)] mt-1 ml-1">
+                                Enter your full name
+                            </p>
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="email"
+                                className="block text-xs font-bold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider"
+                            >
+                                Email Address <span aria-label="required" className="text-rose-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <Mail className="w-5 h-5 text-indigo-400/50 absolute left-4 top-1/2 -translate-y-1/2" />
+                                <input
+                                    type="email"
+                                    className="input-field input-field-icon-left"
+                                    placeholder="you@example.com"
+                                    value={form.email}
+                                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                    required
+                                    id="email"
+                                    aria-required="true"
+                                    aria-describedby="email-hint"
+                                />
+                            </div>
+                            <p id="email-hint" className="text-[10px] text-[var(--text-secondary)] mt-1 ml-1">
+                                Enter a valid email address
+                            </p>
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="password"
+                                className="block text-xs font-bold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider"
+                            >
+                                Password <span aria-label="required" className="text-rose-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <Lock className="w-5 h-5 text-indigo-400/50 absolute left-4 top-1/2 -translate-y-1/2" />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    className="input-field input-field-icon-left input-field-icon-right"
+                                    placeholder="Min. 8 characters"
+                                    value={form.password}
+                                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                    required
+                                    id="password"
+                                    aria-required="true"
+                                    aria-describedby="password-hint"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400/50 hover:text-indigo-400 focus:outline-none transition-colors"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="w-5 h-5" />
+                                    ) : (
+                                        <Eye className="w-5 h-5" />
+                                    )}
+                                </button>
+                            </div>
+                            <p id="password-hint" className="text-[10px] text-[var(--text-secondary)] mt-1 ml-1">
+                                At least 8 characters for security
+                            </p>
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="confirm"
+                                className="block text-xs font-bold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider"
+                            >
+                                Confirm Password <span aria-label="required" className="text-rose-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <Lock className="w-5 h-5 text-indigo-400/50 absolute left-4 top-1/2 -translate-y-1/2" />
+                                <input
+                                    type={showConfirm ? "text" : "password"}
+                                    className="input-field input-field-icon-left input-field-icon-right"
+                                    placeholder="Repeat your password"
+                                    value={form.confirm}
+                                    onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                                    required
+                                    id="confirm"
+                                    aria-required="true"
+                                    aria-describedby="confirm-hint"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirm(!showConfirm)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400/50 hover:text-indigo-400 focus:outline-none transition-colors"
+                                    aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                                >
+                                    {showConfirm ? (
+                                        <EyeOff className="w-5 h-5" />
+                                    ) : (
+                                        <Eye className="w-5 h-5" />
+                                    )}
+                                </button>
+                            </div>
+                            <p id="confirm-hint" className="text-[10px] text-[var(--text-secondary)] mt-1 ml-1">
+                                Must match password above
+                            </p>
+                        </div>
+
+                        <motion.button
                             type="submit"
-                            className="btn-primary"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="btn-primary w-full justify-center py-3.5 mt-4 flex items-center gap-2 text-base font-bold shadow-lg shadow-indigo-500/20"
                             disabled={loading}
                             aria-busy={loading}
-                            aria-label={loading ? "Creating account..." : "Create free account"}
-                            style={{ width: "100%", justifyContent: "center", marginTop: "8px", opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer", fontSize: "16px", padding: "15px" }}
+                            aria-label={loading ? "Signing up..." : "Sign up for a free account"}
                         >
-                            {loading
-                                ? <><div className="spinner" style={{ width: "18px", height: "18px", borderWidth: "2px" }} />Creating account...</>
-                                : <><span aria-hidden="true">🌟</span> Create Free Account</>
-                            }
-                        </button>
+                            {loading ? (
+                                <>
+                                    <div className="spinner w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full" />
+                                    <span>Signing up...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Sign Up</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </>
+                            )}
+                        </motion.button>
                     </form>
 
-                    <div className="divider" />
-                    <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)", fontWeight: 600 }}>
+                    <div className="divider my-6 border-t border-white/[0.08]" />
+
+                    <p className="text-center text-sm text-[var(--text-secondary)] font-semibold">
                         Already have an account?{" "}
-                        <Link href="/login" style={{ color: "var(--accent-light)", fontWeight: 800, textDecoration: "none" }}>Sign in 👋</Link>
+                        <Link href="/login" className="text-[var(--accent)] hover:underline font-extrabold transition-colors">
+                            Login
+                        </Link>
                     </p>
-                </div>
+                </GlassCardStrong>
             </div>
         </div>
     );

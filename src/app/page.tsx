@@ -2,225 +2,253 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
+import { AnimatedSection } from "@/components/ui/animated-section";
+import { GlassCard } from "@/components/ui/glass-card";
+import { PageBackground } from "@/components/ui/page-background";
+import { 
+    Sparkles, 
+    FileText, 
+    Brain, 
+    Target, 
+    BarChart2, 
+    Lightbulb, 
+    Zap, 
+    ArrowRight, 
+    CheckCircle2,
+    Plus,
+    LayoutDashboard,
+    Rocket,
+    LogIn
+} from "lucide-react";
 
 export default function HomePage() {
     const { data: session } = useSession();
 
     const features = [
-        { icon: "📄", title: "Upload Any Document", desc: "Paste text or upload PDF/TXT files. Our AI understands your content instantly.", color: "violet" },
-        { icon: "🤖", title: "AI Question Generation", desc: "Hugging Face AI extracts key concepts and creates perfect MCQs automatically.", color: "sky" },
-        { icon: "🎯", title: "3 Difficulty Levels", desc: "Easy, Medium, or Hard — tailored to your learning needs and pace.", color: "amber" },
-        { icon: "📊", title: "Track Your Progress", desc: "Every score is saved. Monitor improvement over time on your dashboard.", color: "teal" },
-        { icon: "💡", title: "Detailed Explanations", desc: "Learn why each answer is correct with AI-generated explanations.", color: "pink" },
-        { icon: "⚡", title: "Instant Results", desc: "Generate a 10-question quiz in seconds. Study smarter, not harder.", color: "coral" },
+        { 
+            icon: <FileText className="w-6 h-6 text-violet-400" />, 
+            title: "Upload Any Document", 
+            desc: "Paste text or upload PDF/TXT files. Our AI understands your content instantly.", 
+            color: "violet" 
+        },
+        { 
+            icon: <Brain className="w-6 h-6 text-sky-400" />, 
+            title: "AI Question Generation", 
+            desc: "Hugging Face AI extracts key concepts and creates perfect MCQs automatically.", 
+            color: "sky" 
+        },
+        { 
+            icon: <Target className="w-6 h-6 text-amber-400" />, 
+            title: "3 Difficulty Levels", 
+            desc: "Easy, Medium, or Hard — tailored to your learning needs and pace.", 
+            color: "amber" 
+        },
+        { 
+            icon: <BarChart2 className="w-6 h-6 text-emerald-400" />, 
+            title: "Track Your Progress", 
+            desc: "Every score is saved. Monitor improvement over time on your dashboard.", 
+            color: "teal" 
+        },
+        { 
+            icon: <Lightbulb className="w-6 h-6 text-pink-400" />, 
+            title: "Detailed Explanations", 
+            desc: "Learn why each answer is correct with AI-generated explanations.", 
+            color: "pink" 
+        },
+        { 
+            icon: <Zap className="w-6 h-6 text-rose-400" />, 
+            title: "Instant Results", 
+            desc: "Generate a 10-question quiz in seconds. Study smarter, not harder.", 
+            color: "coral" 
+        },
     ];
 
     const steps = [
-        { num: "01", title: "Upload Content", desc: "Paste your text or upload a document", emoji: "📄", color: "rgba(56,189,248,0.15)", border: "rgba(56,189,248,0.3)" },
-        { num: "02", title: "AI Generates Quiz", desc: "AI creates targeted MCQs instantly", emoji: "🤖", color: "rgba(139,92,246,0.15)", border: "rgba(139,92,246,0.3)" },
-        { num: "03", title: "Take the Quiz", desc: "Answer questions at your own pace", emoji: "✏️", color: "rgba(251,191,36,0.15)", border: "rgba(251,191,36,0.3)" },
-        { num: "04", title: "Review & Learn", desc: "See explanations for every answer", emoji: "🏆", color: "rgba(52,211,153,0.15)", border: "rgba(52,211,153,0.3)" },
+        { 
+            num: "01", 
+            title: "Upload Content", 
+            desc: "Paste your text or upload a document", 
+            icon: <FileText className="w-5 h-5 text-sky-400" />, 
+            color: "rgba(56,189,248,0.1)", 
+            border: "rgba(56,189,248,0.2)" 
+        },
+        { 
+            num: "02", 
+            title: "AI Generates Quiz", 
+            desc: "AI creates targeted MCQs instantly", 
+            icon: <Brain className="w-5 h-5 text-violet-400" />, 
+            color: "rgba(139,92,246,0.1)", 
+            border: "rgba(139,92,246,0.2)" 
+        },
+        { 
+            num: "03", 
+            title: "Take the Quiz", 
+            desc: "Answer questions at your own pace", 
+            icon: <Zap className="w-5 h-5 text-amber-400" />, 
+            color: "rgba(251,191,36,0.1)", 
+            border: "rgba(251,191,36,0.2)" 
+        },
+        { 
+            num: "04", 
+            title: "Review & Learn", 
+            desc: "See explanations for every answer", 
+            icon: <Target className="w-5 h-5 text-emerald-400" />, 
+            color: "rgba(52,211,153,0.1)", 
+            border: "rgba(52,211,153,0.2)" 
+        },
     ];
-
-    const decorEmojis = [
-        { e: "⭐", top: "12%", left: "6%", delay: "0s", duration: "4s" },
-        { e: "🌟", top: "20%", right: "8%", delay: "0.8s", duration: "5s" },
-        { e: "✨", top: "60%", left: "3%", delay: "1.5s", duration: "6s" },
-        { e: "🎉", top: "75%", right: "5%", delay: "0.3s", duration: "4.5s" },
-        { e: "💫", top: "40%", right: "3%", delay: "2s", duration: "5.5s" },
-    ];
-
-    const [reducedMotion, setReducedMotion] = useState(() => {
-        if (typeof window === "undefined") return false;
-        try {
-            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        } catch {
-            return false;
-        }
-    });
-
-    useEffect(() => {
-        try {
-            const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-            const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-            if (mq.addEventListener) mq.addEventListener('change', handler);
-            else (mq as any).addListener(handler);
-            return () => {
-                if (mq.removeEventListener) mq.removeEventListener('change', handler);
-                else (mq as any).removeListener(handler);
-            };
-        } catch {
-            // ignore on SSR
-        }
-    }, []);
 
     return (
-        <div style={{ position: "relative" }}>
-            <div className="bg-mesh" />
-
-            {/* Floating decoration emojis (decorative only; respects reduced-motion) */}
-            {decorEmojis.map((d, i) => (
-                <div
-                    key={i}
-                    className={reducedMotion ? undefined : "animate-float"}
-                    role="img"
-                    aria-hidden={true}
-                    style={{
-                        position: "fixed",
-                        top: d.top,
-                        left: (d as { left?: string }).left,
-                        right: (d as { right?: string }).right,
-                        fontSize: "24px",
-                        opacity: 0.35,
-                        pointerEvents: "none",
-                        zIndex: 0,
-                        animationDelay: reducedMotion ? undefined : d.delay,
-                        animationDuration: reducedMotion ? undefined : d.duration,
-                        animationPlayState: reducedMotion ? 'paused' : undefined,
-                    }}
-                >
-                    {d.e}
+        <div className="relative">
+            <PageBackground variant="default" />
+            <HeroGeometric
+                badge="Powered by Hugging Face AI"
+                title1="Turn Any Document Into"
+                title2="An AI-Powered Quiz"
+                description="Upload text, PDFs, or study notes — our AI instantly creates personalized multiple-choice quizzes with detailed explanations."
+            >
+                <div className="flex gap-4 justify-center flex-wrap mt-4">
+                    {session ? (
+                        <>
+                            <Link href="/upload">
+                                <button className="btn-primary flex items-center gap-2 text-base px-8 py-3.5">
+                                    <Plus className="w-5 h-5" />
+                                    Create New Quiz
+                                </button>
+                            </Link>
+                            <Link href="/dashboard">
+                                <button className="btn-secondary flex items-center gap-2 text-base px-8 py-3.5">
+                                    <LayoutDashboard className="w-5 h-5 text-indigo-400" />
+                                    Dashboard
+                                </button>
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            <Link href="/register">
+                                <button className="btn-primary flex items-center gap-2 text-base px-8 py-3.5">
+                                    <Rocket className="w-5 h-5" />
+                                    Start for Free
+                                </button>
+                            </Link>
+                            <Link href="/login">
+                                <button className="btn-secondary flex items-center gap-2 text-base px-8 py-3.5">
+                                    <LogIn className="w-5 h-5 text-indigo-400" />
+                                    Login
+                                </button>
+                            </Link>
+                        </>
+                    )}
                 </div>
-            ))}
-
-            {/* Hero */}
-            <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "90px 24px 80px", textAlign: "center", position: "relative", zIndex: 1 }}>
-                <div className="animate-slide-up">
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(139, 92, 246, 0.14)", border: "1.5px solid rgba(139, 92, 246, 0.35)", borderRadius: "999px", padding: "7px 18px", marginBottom: "32px", fontSize: "13px", fontWeight: 800, color: "#A78BFA" }}>
-                        <span>🧠</span><span>Powered by Hugging Face AI</span>
-                    </div>
-
-                    <h1 style={{ fontSize: "clamp(38px, 7vw, 76px)", fontWeight: 900, lineHeight: 1.1, marginBottom: "24px", letterSpacing: "-1.5px" }}>
-                        Turn Any Document Into<br /><span className="gradient-text">An AI-Powered Quiz</span>
-                    </h1>
-
-                    <p style={{ fontSize: "18px", color: "var(--text-secondary)", maxWidth: "540px", margin: "0 auto 48px", lineHeight: 1.7, fontWeight: 500 }}>
-                        Upload text, PDFs, or study notes — our AI instantly creates personalized multiple-choice quizzes with detailed explanations. 🎓
-                    </p>
-
-                    <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-                        {session ? (
-                            <>
-                                <Link href="/upload">
-                                    <button className="btn-primary" style={{ fontSize: "16px", padding: "15px 36px" }}>✨ Create New Quiz</button>
-                                </Link>
-                                <Link href="/dashboard">
-                                    <button className="btn-secondary" style={{ fontSize: "16px", padding: "15px 36px" }}>📊 Dashboard</button>
-                                </Link>
-                            </>
-                        ) : (
-                            <>
-                                <Link href="/register">
-                                    <button className="btn-primary" style={{ fontSize: "16px", padding: "15px 36px" }}>🚀 Start for Free</button>
-                                </Link>
-                                <Link href="/login">
-                                    <button className="btn-secondary" style={{ fontSize: "16px", padding: "15px 36px" }}>Sign In</button>
-                                </Link>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* Hero Visual */}
-                <div className="animate-float" style={{ marginTop: "72px", display: "block", position: "relative", width: "100%" }}>
-                    <div className="glass-strong" style={{ padding: "clamp(16px, 5vw, 32px)", maxWidth: "580px", width: "100%", margin: "0 auto", textAlign: "left", boxShadow: "0 40px 120px rgba(0,0,0,0.5), 0 0 60px rgba(139, 92, 246, 0.15)", boxSizing: "border-box" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-                            <div style={{ display: "flex", gap: "6px" }}>
-                                <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#F87171" }} />
-                                <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#FBBF24" }} />
-                                <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#34D399" }} />
-                            </div>
-                            <span style={{ fontSize: "13px", color: "var(--text-secondary)", fontFamily: "monospace" }}>AI Quiz Generator 🧠</span>
-                        </div>
-                        <div style={{ background: "rgba(139, 92, 246, 0.07)", border: "1px solid rgba(139, 92, 246, 0.22)", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", fontSize: "13px", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            📄 &nbsp;quantum_physics_notes.pdf &nbsp;<span style={{ color: "#34D399", fontWeight: 700 }}>✓ Extracted 4,200 words</span>
-                        </div>
-                        <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "14px" }}>Q3: What does the Heisenberg Uncertainty Principle state?</p>
-                        {[
-                            { opt: "A", text: "Energy is conserved in all reactions", correct: false, color: "#38BDF8" },
-                            { opt: "B", text: "Matter can be converted to energy", correct: false, color: "#FBBF24" },
-                            { opt: "C", text: "You cannot know position and momentum simultaneously with perfect precision", correct: true, color: "#F87171" },
-                            { opt: "D", text: "Electrons travel in fixed orbits", correct: false, color: "#34D399" },
-                        ].map((o) => (
-                            <div key={o.opt} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "10px", marginBottom: "8px", border: `1px solid ${o.correct ? "rgba(52,211,153,0.45)" : "rgba(255,255,255,0.06)"}`, background: o.correct ? "rgba(52,211,153,0.09)" : "rgba(255,255,255,0.02)", fontSize: "13px", color: o.correct ? "#34D399" : "var(--text-secondary)" }}>
-                                <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: o.correct ? "rgba(52,211,153,0.2)" : `rgba(0,0,0,0)`, border: `1px solid ${o.color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: o.color, flexShrink: 0 }}>{o.opt}</span>
-                                <span style={{ wordBreak: "break-word" }}>{o.text}</span>
-                                {o.correct && <span style={{ marginLeft: "auto", fontWeight: 800, flexShrink: 0 }}>✓</span>}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            </HeroGeometric>
 
             {/* How It Works */}
-            <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "80px 24px", position: "relative", zIndex: 1 }}>
-                <div style={{ textAlign: "center", marginBottom: "60px" }}>
-                    <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, marginBottom: "12px" }}>How it <span className="gradient-text-blue">works</span> ✨</h2>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "16px", fontWeight: 500 }}>From document to quiz in under 30 seconds</p>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), 1fr))", gap: "20px" }}>
+            <section className="max-w-[1100px] mx-auto px-6 py-20 relative z-10">
+                <AnimatedSection className="text-center mb-16" direction="up">
+                    <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-[var(--text-primary)]">
+                        How it <span className="gradient-text-blue">works</span> <Sparkles className="w-6 h-6 inline-block text-indigo-300 ml-1.5 animate-pulse" />
+                    </h2>
+                    <p className="text-base text-[var(--text-secondary)] font-medium">
+                        From document to quiz in under 30 seconds
+                    </p>
+                </AnimatedSection>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {steps.map((step, i) => (
-                        <div key={i} className="glass card-hover" style={{ padding: "28px 24px", position: "relative", overflow: "hidden", borderColor: step.border }}>
-                            <div style={{ fontSize: "42px", fontWeight: 900, color: step.border.replace("0.3", "0.12"), position: "absolute", top: "12px", right: "16px", fontFamily: "monospace", lineHeight: 1 }}>{step.num}</div>
-                            <div style={{ width: "52px", height: "52px", borderRadius: "16px", background: step.color, border: `1px solid ${step.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", marginBottom: "16px" }}>{step.emoji}</div>
-                            <h3 style={{ fontWeight: 800, fontSize: "16px", marginBottom: "8px" }}>{step.title}</h3>
-                            <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.6, fontWeight: 500 }}>{step.desc}</p>
-                        </div>
+                        <AnimatedSection key={i} delay={i * 0.1} direction="up">
+                            <GlassCard className="h-full p-7 overflow-hidden border-white/[0.08]" hover={true}>
+                                <div className="absolute top-4 right-4 text-4xl font-mono font-bold opacity-10 pointer-events-none select-none">
+                                    {step.num}
+                                </div>
+                                <div 
+                                    className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 border"
+                                    style={{ background: step.color, borderColor: step.border }}
+                                >
+                                    {step.icon}
+                                </div>
+                                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">{step.title}</h3>
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
+                                    {step.desc}
+                                </p>
+                            </GlassCard>
+                        </AnimatedSection>
                     ))}
                 </div>
             </section>
 
             {/* Features */}
-            <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "40px 24px 80px", position: "relative", zIndex: 1 }}>
-                <div style={{ textAlign: "center", marginBottom: "60px" }}>
-                    <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, marginBottom: "12px" }}>Everything you <span className="gradient-text">need to learn</span></h2>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))", gap: "20px" }}>
+            <section className="max-w-[1100px] mx-auto px-6 py-10 md:py-20 relative z-10">
+                <AnimatedSection className="text-center mb-16" direction="up">
+                    <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-[var(--text-primary)]">
+                        Everything you <span className="gradient-text">need to learn</span>
+                    </h2>
+                </AnimatedSection>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {features.map((f, i) => (
-                        <div key={i} className="glass card-hover" style={{ padding: "28px", display: "flex", flexDirection: "column", gap: "14px" }}>
-                            <div className={`icon-circle icon-circle-${f.color}`}>{f.icon}</div>
-                            <h3 style={{ fontWeight: 800, fontSize: "17px" }}>{f.title}</h3>
-                            <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.7, fontWeight: 500 }}>{f.desc}</p>
-                        </div>
+                        <AnimatedSection key={i} delay={i * 0.1} direction="up">
+                            <GlassCard className="h-full p-7 flex flex-col gap-4 border-white/[0.08]" hover={true}>
+                                <div className={`icon-circle icon-circle-${f.color} flex items-center justify-center w-12 h-12 rounded-full`}>
+                                    {f.icon}
+                                </div>
+                                <h3 className="text-lg font-bold text-[var(--text-primary)]">{f.title}</h3>
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
+                                    {f.desc}
+                                </p>
+                            </GlassCard>
+                        </AnimatedSection>
                     ))}
                 </div>
             </section>
 
             {/* Stats strip */}
-            <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px 80px", position: "relative", zIndex: 1 }}>
-                <div className="glass" style={{ padding: "clamp(16px, 4vw, 32px) clamp(20px, 5vw, 40px)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(150px, 100%), 1fr))", gap: "24px", textAlign: "center" }}>
-                    {[
-                        { val: "10s", label: "Quiz generated", emoji: "⚡" },
-                        { val: "3", label: "Difficulty levels", emoji: "🎯" },
-                        { val: "∞", label: "Topics supported", emoji: "📚" },
-                        { val: "100%", label: "Free to use", emoji: "🎉" },
-                    ].map((s, i) => (
-                        <div key={i}>
-                            <div style={{ fontSize: "24px", marginBottom: "4px" }}>{s.emoji}</div>
-                            <div style={{ fontSize: "32px", fontWeight: 900, marginBottom: "4px" }} className="gradient-text">{s.val}</div>
-                            <div style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: 600 }}>{s.label}</div>
-                        </div>
-                    ))}
-                </div>
+            <section className="max-w-[1100px] mx-auto px-6 pb-20 relative z-10">
+                <AnimatedSection direction="up">
+                    <div className="glass grid grid-cols-2 md:grid-cols-4 gap-8 text-center p-8 md:p-10 border-white/[0.08]">
+                        {[
+                            { val: "10s", label: "Quiz generated", icon: <Zap className="w-5 h-5 mx-auto mb-2 text-rose-400" /> },
+                            { val: "3", label: "Difficulty levels", icon: <Target className="w-5 h-5 mx-auto mb-2 text-amber-400" /> },
+                            { val: "∞", label: "Topics supported", icon: <Brain className="w-5 h-5 mx-auto mb-2 text-sky-400" /> },
+                            { val: "100%", label: "Free to use", icon: <CheckCircle2 className="w-5 h-5 mx-auto mb-2 text-emerald-400" /> },
+                        ].map((s, i) => (
+                            <div key={i} className="flex flex-col items-center">
+                                {s.icon}
+                                <div className="text-3xl md:text-4xl font-black mb-1 gradient-text">{s.val}</div>
+                                <div className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider">{s.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </AnimatedSection>
             </section>
 
             {/* CTA */}
-            <section style={{ maxWidth: "700px", margin: "0 auto", padding: "40px 24px 100px", textAlign: "center", position: "relative", zIndex: 1 }}>
-                <div className="glass-strong animate-pulse-glow" style={{ padding: "clamp(30px, 8vw, 60px) clamp(20px, 6vw, 40px)", boxSizing: "border-box", width: "100%" }}>
-                    <div style={{ fontSize: "48px", marginBottom: "16px" }}>🚀</div>
-                    <h2 style={{ fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 900, marginBottom: "16px" }}>
-                        {session ? "Ready to test your knowledge?" : "Ready to level up your learning?"}
-                    </h2>
-                    <p style={{ color: "var(--text-secondary)", marginBottom: "36px", fontSize: "16px", fontWeight: 500 }}>
-                        {session ? "Create a new quiz from any topic or document. Let's go! 🎊" : "Join and start generating AI-powered quizzes today. Free forever! 🎊"}
-                    </p>
-                    <Link href={session ? "/upload" : "/register"}>
-                        <button className="btn-primary" style={{ fontSize: "17px", padding: "17px 44px" }}>
-                            {session ? "✨ Create New Quiz" : "🌟 Create Free Account"}
-                        </button>
-                    </Link>
-                </div>
+            <section className="max-w-[700px] mx-auto px-6 pb-24 text-center relative z-10">
+                <AnimatedSection direction="up">
+                    <div className="glass-strong p-8 md:p-12 border-white/[0.08] relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] opacity-50" />
+                        <div className="text-5xl mb-6 flex justify-center">
+                            <Sparkles className="w-12 h-12 text-indigo-400 animate-pulse" />
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-extrabold mb-4 text-[var(--text-primary)] relative z-10">
+                            {session ? "Ready to test your knowledge?" : "Ready to level up your learning?"}
+                        </h2>
+                        <p className="text-sm md:text-base text-[var(--text-secondary)] mb-8 font-medium max-w-lg mx-auto relative z-10">
+                            {session ? "Create a new quiz from any topic or document. Let's go!" : "Join and start generating AI-powered quizzes today. Free forever!"}
+                        </p>
+                        <Link href={session ? "/upload" : "/register"} className="relative z-10 inline-block">
+                            <motion.button 
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="btn-primary flex items-center gap-2 text-base px-8 py-3.5 shadow-lg shadow-indigo-500/20"
+                            >
+                                {session ? "Create New Quiz" : "Create Free Account"}
+                                <ArrowRight className="w-4 h-4 ml-1" />
+                            </motion.button>
+                        </Link>
+                    </div>
+                </AnimatedSection>
             </section>
         </div>
     );

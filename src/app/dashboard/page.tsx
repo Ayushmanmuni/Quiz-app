@@ -4,13 +4,31 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { PageBackground } from "@/components/ui/page-background";
+import { GlassCard, GlassCardStrong } from "@/components/ui/glass-card";
+import { 
+    Plus, 
+    FileText, 
+    TrendingUp, 
+    Trophy, 
+    Calendar, 
+    RotateCcw, 
+    Sparkles, 
+    ArrowRight, 
+    Clock, 
+    AlertCircle, 
+    BookOpen, 
+    Target,
+    Activity
+} from "lucide-react";
 
 interface Attempt {
     id: string;
     score: number;
     totalQuestions: number;
     completedAt: string;
-    quiz: { title: string; difficulty: string };
+    quiz: { title: string; difficulty: string; mode?: string };
     quizId: string;
 }
 
@@ -37,11 +55,11 @@ export default function DashboardPage() {
 
     if (status === "loading" || loading) {
         return (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "calc(100vh - 70px)" }}>
-                <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "52px", marginBottom: "16px" }} className="animate-wiggle">🧠</div>
-                    <div className="spinner" style={{ margin: "0 auto 16px" }} />
-                    <p style={{ color: "var(--text-secondary)", fontWeight: 600 }}>Loading your dashboard...</p>
+            <div className="relative min-h-[calc(100vh-70px)] flex justify-center items-center flex-col">
+                <PageBackground variant="dashboard" />
+                <div className="relative z-10 text-center px-6">
+                    <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-400 animate-spin rounded-full mx-auto mb-4" />
+                    <p className="text-sm text-[var(--text-secondary)] font-bold">Loading your dashboard...</p>
                 </div>
             </div>
         );
@@ -52,199 +70,206 @@ export default function DashboardPage() {
     const thisWeek  = attempts.filter((a) => (new Date().getTime() - new Date(a.completedAt).getTime()) / (1000 * 60 * 60 * 24) <= 7).length;
 
     const stats = [
-        { label: "Total Quizzes",   value: attempts.length, icon: "📝", color: "rgba(139,92,246,", glow: "rgba(139,92,246,0.2)" },
-        { label: "Avg Score",       value: `${avgScore}%`,  icon: "📊", color: "rgba(56,189,248,",  glow: "rgba(56,189,248,0.2)" },
-        { label: "Best Score",      value: `${bestScore}%`, icon: "🏆", color: "rgba(251,191,36,",  glow: "rgba(251,191,36,0.2)" },
-        { label: "This Week",       value: thisWeek,        icon: "🔥", color: "rgba(248,113,113,", glow: "rgba(248,113,113,0.2)" },
+        { label: "Total Quizzes",   value: attempts.length, icon: <FileText className="w-5 h-5" />, color: "rgba(139,92,246,", textCol: "text-violet-400", borderCol: "border-violet-500/20" },
+        { label: "Avg Score",       value: `${avgScore}%`,  icon: <TrendingUp className="w-5 h-5" />, color: "rgba(56,189,248,", textCol: "text-sky-400", borderCol: "border-sky-500/20" },
+        { label: "Best Score",      value: `${bestScore}%`, icon: <Trophy className="w-5 h-5" />, color: "rgba(251,191,36,", textCol: "text-amber-400", borderCol: "border-amber-500/20" },
+        { label: "This Week",       value: thisWeek,        icon: <Activity className="w-5 h-5" />, color: "rgba(248,113,113,", textCol: "text-rose-400", borderCol: "border-rose-500/20" },
     ];
 
     const getScoreKey = (pct: number) => pct >= 80 ? "high" : pct >= 50 ? "medium" : "low";
     const formatDate  = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
     return (
-        <main style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
-            <div className="bg-mesh" />
-            <div style={{ position: "relative", zIndex: 1, maxWidth: "1000px", margin: "0 auto", padding: "50px 24px 80px" }}>
+        <main className="relative min-h-[calc(100vh-70px)]">
+            <PageBackground variant="dashboard" />
+            <div className="relative z-10 max-w-[1000px] mx-auto px-6 py-12">
 
                 {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "40px", flexWrap: "wrap", gap: "16px" }}>
-                    <div className="animate-slide-up">
-                        <h1 style={{ fontSize: "30px", fontWeight: 900, marginBottom: "6px" }}>
-                            Welcome back, {session?.user?.name?.split(" ")[0] || "there"} <span aria-hidden="true">👋</span>
+                <div className="flex flex-col md:flex-row justify-between items-center md:items-start mb-10 gap-6 text-center md:text-left">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] mb-2">
+                            Welcome back, {session?.user?.name?.split(" ")[0] || "there"}
                         </h1>
-                        <p style={{ color: "var(--text-secondary)", fontSize: "15px", fontWeight: 600 }}>Track your quiz progress and start new challenges.</p>
+                        <p className="text-sm text-[var(--text-secondary)] font-semibold">Track your quiz progress and start new challenges.</p>
                     </div>
                     <Link href="/upload">
-                        <button
-                            className="btn-primary"
-                            style={{ padding: "12px 26px" }}
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="btn-primary flex items-center gap-1.5 shadow-lg shadow-indigo-500/20 px-6 py-3"
                             aria-label="Create a new quiz"
                         >
-                            <span aria-hidden="true">✨</span> New Quiz
-                        </button>
+                            <Plus className="w-4.5 h-4.5" />
+                            <span>New Quiz</span>
+                        </motion.button>
                     </Link>
                 </div>
 
                 {/* Stats Grid */}
-                <section aria-label="Quiz statistics">
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+                <section aria-label="Quiz statistics" className="mb-12">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {stats.map((s, i) => (
-                            <div
+                            <motion.div
                                 key={i}
-                                className="glass card-hover"
-                                style={{ padding: "24px", borderColor: `${s.color}0.25)` }}
-                                role="region"
-                                aria-label={`${s.label}: ${s.value}`}
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: i * 0.1 }}
+                                className="h-full"
                             >
-                                <div
-                                    style={{
-                                        width: "48px",
-                                        height: "48px",
-                                        borderRadius: "14px",
-                                        background: `${s.color}0.15)`,
-                                        border: `1.5px solid ${s.color}0.3)`,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        fontSize: "24px",
-                                        marginBottom: "14px",
-                                    }}
-                                    aria-hidden="true"
+                                <GlassCard 
+                                    className={`p-5 flex flex-col h-full border ${s.borderCol}`} 
+                                    hover={true}
                                 >
-                                    {s.icon}
-                                </div>
-                                <div style={{ fontSize: "30px", fontWeight: 900, marginBottom: "4px", color: `${s.color}0.95)` }}>{s.value}</div>
-                                <div style={{ fontSize: "13px", color: "var(--text-secondary)", fontWeight: 700 }}>{s.label}</div>
-                            </div>
+                                    <div
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                                        style={{ 
+                                            background: `${s.color}0.12)`, 
+                                            border: `1.5px solid ${s.color}0.25)` 
+                                        }}
+                                        aria-hidden="true"
+                                    >
+                                        <div className={s.textCol}>{s.icon}</div>
+                                    </div>
+                                    <div className={`text-2xl md:text-3xl font-black mb-1`} style={{ color: `${s.color}0.95)` }}>
+                                        {s.value}
+                                    </div>
+                                    <div className="text-xs text-[var(--text-secondary)] font-bold">{s.label}</div>
+                                </GlassCard>
+                            </motion.div>
                         ))}
                     </div>
                 </section>
 
                 {/* Recent Quizzes */}
                 <section aria-label="Recent quizzes">
-                    <h2 style={{ fontSize: "20px", fontWeight: 900, marginBottom: "20px" }}>
-                        <span aria-hidden="true">🕐</span> Recent Quizzes
+                    <h2 className="text-lg md:text-xl font-black text-[var(--text-primary)] mb-6 flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-indigo-400" />
+                        <span>Recent Quizzes</span>
                     </h2>
+
                     {attempts.length === 0 ? (
-                        <div className="glass-strong" style={{ padding: "60px 40px", textAlign: "center" }}>
-                            <div
-                                style={{ fontSize: "72px", marginBottom: "16px" }}
-                                className="animate-float"
-                                aria-hidden="true"
-                            >
-                                🦄
-                            </div>
-                            <h3 style={{ fontSize: "22px", fontWeight: 900, marginBottom: "10px" }}>No quizzes yet!</h3>
-                            <p style={{ color: "var(--text-secondary)", marginBottom: "28px", fontSize: "15px", fontWeight: 600 }}>
-                                Generate your first AI-powered quiz from any document, topic, or text. It&apos;s free! <span aria-hidden="true">🚀</span>
-                            </p>
-                            <Link href="/upload">
-                                <button
-                                    className="btn-primary"
-                                    style={{ padding: "14px 32px", fontSize: "16px" }}
-                                    aria-label="Generate your first quiz"
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <GlassCardStrong className="p-8 md:p-12 text-center border-white/[0.08]" hover={false}>
+                                <motion.div
+                                    animate={{ y: [0, -10, 0] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                    className="w-20 h-20 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-6 text-indigo-400"
+                                    aria-hidden="true"
                                 >
-                                    <span aria-hidden="true">✨</span> Generate First Quiz
-                                </button>
-                            </Link>
-                        </div>
+                                    <Sparkles className="w-10 h-10" />
+                                </motion.div>
+                                <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">No quizzes taken yet!</h3>
+                                <p className="text-sm text-[var(--text-secondary)] font-semibold mb-8 max-w-sm mx-auto">
+                                    Generate your first AI-powered quiz from any document, topic, or text. It&apos;s free!
+                                </p>
+                                <Link href="/upload">
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="btn-primary flex items-center gap-1.5 shadow-lg shadow-indigo-500/20 px-8 py-3.5 mx-auto"
+                                        aria-label="Generate your first quiz"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        <span>Generate First Quiz</span>
+                                    </motion.button>
+                                </Link>
+                            </GlassCardStrong>
+                        </motion.div>
                     ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                            {attempts.map((attempt) => {
+                        <div className="flex flex-col gap-4">
+                            {attempts.map((attempt, index) => {
                                 const pct      = Math.round((attempt.score / attempt.totalQuestions) * 100);
                                 const scoreKey = getScoreKey(pct);
                                 const color    = SCORE_COLORS[scoreKey];
                                 return (
-                                    <div
+                                    <motion.div
                                         key={attempt.id}
-                                        className="glass card-hover"
-                                        style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}
-                                        role="region"
-                                        aria-label={`${attempt.quiz.title} - ${pct}% score`}
+                                        initial={{ opacity: 0, y: 15 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.4, delay: Math.min(index * 0.08, 0.4) }}
                                     >
-                                        {/* Score ring */}
-                                        <div
-                                            style={{
-                                                width: "60px",
-                                                height: "60px",
-                                                borderRadius: "50%",
-                                                background: `conic-gradient(${color} ${pct * 3.6}deg, rgba(255,255,255,0.06) 0)`,
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                position: "relative",
-                                                flexShrink: 0,
-                                            }}
-                                            role="img"
-                                            aria-label={`Score: ${pct}%`}
+                                        <GlassCard
+                                            className="p-5 flex flex-col md:flex-row items-center md:justify-between gap-5 border-white/[0.08]"
+                                            hover={true}
                                         >
-                                            <div
-                                                style={{
-                                                    position: "absolute",
-                                                    inset: "6px",
-                                                    borderRadius: "50%",
-                                                    background: "var(--bg-secondary)",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    fontWeight: 900,
-                                                    fontSize: "13px",
-                                                    color,
-                                                }}
-                                            >
-                                                {pct}%
-                                            </div>
-                                        </div>
-                                        <div style={{ flex: 1, minWidth: "160px" }}>
-                                            <div style={{ fontWeight: 800, fontSize: "15px", marginBottom: "5px", color: "var(--text-primary)" }}>
-                                                {attempt.quiz.title}
-                                            </div>
-                                            <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                                                <span className={`badge badge-${attempt.quiz.difficulty}`}>
-                                                    {attempt.quiz.difficulty}
-                                                </span>
-                                                {attempt.quiz.mode && attempt.quiz.mode !== "standard" && (
-                                                    <span
-                                                        className="badge"
-                                                        style={{
-                                                            background: attempt.quiz.mode === "study" ? "rgba(56,189,248,0.15)" : "rgba(236,72,153,0.15)",
-                                                            color: attempt.quiz.mode === "study" ? "#38BDF8" : "#EC4899",
-                                                            border: `1.5px solid ${attempt.quiz.mode === "study" ? "rgba(56,189,248,0.3)" : "rgba(236,72,153,0.3)"}`,
-                                                        }}
-                                                    >
-                                                        {attempt.quiz.mode === "study" ? "📖 Study" : "🎯 Adaptive"}
-                                                    </span>
-                                                )}
-                                                <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 700 }}>
-                                                    {attempt.score}/{attempt.totalQuestions} correct
-                                                </span>
-                                                <span
+                                            <div className="flex flex-col md:flex-row items-center gap-5 w-full md:w-auto">
+                                                {/* Score ring */}
+                                                <div
+                                                    className="w-14 h-14 rounded-full flex items-center justify-center relative flex-shrink-0"
                                                     style={{
-                                                        fontSize: "12px",
-                                                        color: "var(--text-secondary)",
-                                                        opacity: 0.6,
+                                                        background: `conic-gradient(${color} ${pct * 3.6}deg, rgba(255,255,255,0.06) 0)`,
                                                     }}
-                                                    title={new Date(attempt.completedAt).toLocaleString()}
+                                                    role="img"
+                                                    aria-label={`Score: ${pct}%`}
                                                 >
-                                                    {formatDate(attempt.completedAt)}
-                                                </span>
+                                                    <div className="absolute inset-[4px] rounded-full bg-[var(--bg-secondary)] flex items-center justify-center font-black text-xs" style={{ color }}>
+                                                        {pct}%
+                                                    </div>
+                                                </div>
+                                                <div className="text-center md:text-left flex-1 min-w-[200px]">
+                                                    <div className="font-extrabold text-[var(--text-primary)] text-base mb-1.5 leading-snug">
+                                                        {attempt.quiz.title}
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2 items-center justify-center md:justify-start">
+                                                        <span className={`badge badge-${attempt.quiz.difficulty}`}>
+                                                            {attempt.quiz.difficulty}
+                                                        </span>
+                                                        {attempt.quiz.mode && attempt.quiz.mode !== "standard" && (
+                                                            <span className="badge bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 inline-flex items-center gap-1">
+                                                                {attempt.quiz.mode === "study" ? (
+                                                                    <>
+                                                                        <BookOpen className="w-3 h-3" />
+                                                                        <span>Study</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <Target className="w-3 h-3" />
+                                                                        <span>Adaptive</span>
+                                                                    </>
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-xs text-[var(--text-secondary)] font-bold">
+                                                            {attempt.score}/{attempt.totalQuestions} correct
+                                                        </span>
+                                                        <span
+                                                            className="text-xs text-[var(--text-secondary)] opacity-60 font-semibold"
+                                                            title={new Date(attempt.completedAt).toLocaleString()}
+                                                        >
+                                                            • {formatDate(attempt.completedAt)}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div style={{ display: "flex", gap: "8px" }}>
-                                            <Link href={`/quiz/${attempt.quizId}/results?attempt=${attempt.id}`}>
-                                                <button
-                                                    className="btn-secondary"
-                                                    style={{ padding: "8px 18px", fontSize: "13px" }}
-                                                    aria-label={`Review ${attempt.quiz.title}`}
-                                                >
-                                                    Review
-                                                </button>
-                                            </Link>
-                                            <Link href={`/quiz/${attempt.quizId}`}>
-                                                <button className="btn-primary" style={{ padding: "8px 18px", fontSize: "13px" }}>Retake 🔁</button>
-                                            </Link>
-                                        </div>
-                                    </div>
+                                            <div className="flex gap-2.5 w-full md:w-auto justify-center md:justify-end border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
+                                                <Link href={`/quiz/${attempt.quizId}/results?attempt=${attempt.id}`} className="flex-1 md:flex-none">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        className="btn-secondary w-full px-5 py-2 text-xs font-bold"
+                                                        aria-label={`Review ${attempt.quiz.title}`}
+                                                    >
+                                                        Review
+                                                    </motion.button>
+                                                </Link>
+                                                <Link href={`/quiz/${attempt.quizId}`} className="flex-1 md:flex-none">
+                                                    <motion.button 
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        className="btn-primary w-full px-5 py-2 text-xs font-bold flex items-center justify-center gap-1"
+                                                    >
+                                                        <RotateCcw className="w-3.5 h-3.5" />
+                                                        <span>Retake</span>
+                                                    </motion.button>
+                                                </Link>
+                                            </div>
+                                        </GlassCard>
+                                    </motion.div>
                                 );
                             })}
                         </div>
