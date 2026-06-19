@@ -3,6 +3,7 @@
 import { useEffect, useState, use, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 interface Question {
     id: string;
@@ -173,7 +174,13 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     const dotColors: Record<string, string> = { A: "#38BDF8", B: "#FBBF24", C: "#F87171", D: "#34D399" };
 
     return (
-        <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
+        <>
+            <HeroGeometric 
+                badge="Quiz Time"
+                title1="Test Your" 
+                title2="Knowledge"
+            />
+            <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, maxWidth: "750px", margin: "0 auto", padding: "40px 24px 60px" }}>
 
@@ -285,5 +292,6 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
                 </div>
             </div>
         </div>
+        </>
     );
 }

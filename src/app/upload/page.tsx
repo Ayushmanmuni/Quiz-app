@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 const DIFFICULTIES = [
     { value: "easy",   label: "Easy",   icon: "🌱", desc: "Factual recall",  bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.45)",  color: "#34D399" },
@@ -125,7 +126,13 @@ export default function UploadPage() {
     }
 
     return (
-        <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
+        <>
+            <HeroGeometric 
+                badge="Create New Quiz"
+                title1="Generate AI-Powered" 
+                title2="Quizzes Instantly"
+            />
+            <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto", padding: "50px 24px" }}>
 
@@ -383,5 +390,6 @@ export default function UploadPage() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

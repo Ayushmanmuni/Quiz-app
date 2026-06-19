@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 interface Attempt {
     id: string;
@@ -62,7 +63,13 @@ export default function DashboardPage() {
     const formatDate  = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
     return (
-        <main style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
+        <>
+            <HeroGeometric 
+                badge="Your Progress"
+                title1="Dashboard &" 
+                title2="Learning Analytics"
+            />
+            <main style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, maxWidth: "1000px", margin: "0 auto", padding: "50px 24px 80px" }}>
 
@@ -252,5 +259,6 @@ export default function DashboardPage() {
                 </section>
             </div>
         </main>
+        </>
     );
 }

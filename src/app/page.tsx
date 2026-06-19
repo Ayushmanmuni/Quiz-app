@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 export default function HomePage() {
     const { data: session } = useSession();
@@ -56,7 +57,13 @@ export default function HomePage() {
     }, []);
 
     return (
-        <div style={{ position: "relative" }}>
+        <>
+            <HeroGeometric 
+                badge="AI-Powered Learning"
+                title1="Turn Any Document Into" 
+                title2="An AI-Powered Quiz"
+            />
+            <div style={{ position: "relative" }}>
             <div className="bg-mesh" />
 
             {/* Floating decoration emojis (decorative only; respects reduced-motion) */}
@@ -223,5 +230,6 @@ export default function HomePage() {
                 </div>
             </section>
         </div>
+        </>
     );
 }

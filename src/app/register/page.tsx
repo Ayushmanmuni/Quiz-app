@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -31,7 +32,13 @@ export default function RegisterPage() {
     };
 
     return (
-        <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
+        <>
+            <HeroGeometric 
+                badge="Join Now"
+                title1="Create Your" 
+                title2="QuizAI Account"
+            />
+            <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 70px)", padding: "40px 24px" }}>
                 <div className="glass-strong animate-slide-up" style={{ width: "100%", maxWidth: "440px", padding: "48px 40px" }}>
@@ -129,5 +136,6 @@ export default function RegisterPage() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

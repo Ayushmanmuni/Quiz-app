@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 interface Question {
     id: string;
@@ -66,7 +67,13 @@ function ResultsContent({ id }: { id: string }) {
     const celebEmojis = getCelebEmojis();
 
     return (
-        <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
+        <>
+            <HeroGeometric 
+                badge="Quiz Complete"
+                title1="Review Your" 
+                title2="Quiz Results"
+            />
+            <div style={{ position: "relative", minHeight: "calc(100vh - 70px)" }}>
             <div className="bg-mesh" />
             <div style={{ position: "relative", zIndex: 1, maxWidth: "800px", margin: "0 auto", padding: "50px 24px 80px" }}>
 
@@ -199,6 +206,7 @@ function ResultsContent({ id }: { id: string }) {
                 </div>
             </div>
         </div>
+        </>
     );
 }
 
