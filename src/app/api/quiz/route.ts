@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
             }
 
             const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB
-            if (typeof (file as any).size === "number" && (file as any).size > MAX_FILE_BYTES) {
+            if (file.size > MAX_FILE_BYTES) {
                 return NextResponse.json({ error: "File too large. Max 5MB allowed." }, { status: 413 });
             }
 

@@ -90,6 +90,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     }, [quiz]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting timer to derived value when quiz or study phase changes
         setTimeLeft(timeLimit);
     }, [timeLimit, studyPhase]);
 
@@ -130,32 +131,38 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
 
     useEffect(() => {
         if (timeLeft === 0 && quiz && !loading && !submitting) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Auto-submit is a legitimate side-effect when timer expires
             handleSubmit();
         }
     }, [timeLeft, quiz, loading, submitting, handleSubmit]);
 
     useEffect(() => {
+        let cancelled = false;
         fetch(`/api/quiz?id=${id}`)
             .then((r) => r.json())
             .then((data) => {
-                setQuiz(data);
-                setLoading(false);
+                if (cancelled) return;
+                // Process adaptive order outside of setState
+                let newAdaptiveOrder: number[] = [];
                 if (data.mode === "adaptive" && data.questions?.length) {
                     const medium: number[] = [];
                     const easy: number[] = [];
                     const hard: number[] = [];
-
                     data.questions.forEach((q: Question, index: number) => {
                         if (q.difficulty === "medium") medium.push(index);
                         else if (q.difficulty === "easy") easy.push(index);
                         else hard.push(index);
                     });
-
-                    setAdaptiveOrder([...medium, ...easy, ...hard]);
+                    newAdaptiveOrder = [...medium, ...easy, ...hard];
                 }
+                // Batch state updates via React's automatic batching
+                setQuiz(data);
+                setLoading(false);
+                if (newAdaptiveOrder.length > 0) setAdaptiveOrder(newAdaptiveOrder);
                 if (data.mode !== "study") setStudyPhase(false);
             })
-            .catch(() => setLoading(false));
+            .catch(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
     }, [id]);
 
     const handleSelect = (questionId: string, option: string) => {

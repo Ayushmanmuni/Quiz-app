@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { SessionProvider } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
@@ -65,15 +65,16 @@ function useClickOutside(ref: React.RefObject<HTMLElement>, onOutside: () => voi
 }
 
 function useIsMobile(breakpoint = 640) {
-    const [isMobile, setIsMobile] = useState(false);
-    useEffect(() => {
+    const subscribe = useCallback((cb: () => void) => {
         const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
-        setIsMobile(mql.matches);
-        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-        mql.addEventListener("change", handler);
-        return () => mql.removeEventListener("change", handler);
+        mql.addEventListener("change", cb);
+        return () => mql.removeEventListener("change", cb);
     }, [breakpoint]);
-    return isMobile;
+    const getSnapshot = useCallback(() => {
+        return window.matchMedia(`(max-width: ${breakpoint}px)`).matches;
+    }, [breakpoint]);
+    const getServerSnapshot = useCallback(() => false, []);
+    return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" }) {

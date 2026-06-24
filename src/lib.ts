@@ -14,24 +14,25 @@ export interface GeneratedQuestion {
     difficulty?: "easy" | "medium" | "hard";
 }
 
-function isNonEmptyString(v: any): v is string {
+function isNonEmptyString(v: unknown): v is string {
     return typeof v === "string" && v.trim().length > 0;
 }
 
-function validateGeneratedQuestion(obj: any): obj is GeneratedQuestion {
+function validateGeneratedQuestion(obj: unknown): obj is GeneratedQuestion {
     if (typeof obj !== "object" || obj === null) return false;
-    if (!isNonEmptyString(obj.questionText)) return false;
-    if (!isNonEmptyString(obj.optionA)) return false;
-    if (!isNonEmptyString(obj.optionB)) return false;
-    if (!isNonEmptyString(obj.optionC)) return false;
-    if (!isNonEmptyString(obj.optionD)) return false;
-    if (!isNonEmptyString(obj.explanation)) return false;
-    if (!["A", "B", "C", "D"].includes(obj.correctAnswer)) return false;
-    if (obj.difficulty && !["easy", "medium", "hard"].includes(obj.difficulty)) return false;
+    const o = obj as Record<string, unknown>;
+    if (!isNonEmptyString(o.questionText)) return false;
+    if (!isNonEmptyString(o.optionA)) return false;
+    if (!isNonEmptyString(o.optionB)) return false;
+    if (!isNonEmptyString(o.optionC)) return false;
+    if (!isNonEmptyString(o.optionD)) return false;
+    if (!isNonEmptyString(o.explanation)) return false;
+    if (!["A", "B", "C", "D"].includes(o.correctAnswer as string)) return false;
+    if (o.difficulty && !["easy", "medium", "hard"].includes(o.difficulty as string)) return false;
     return true;
 }
 
-export function validateQuestionsArray(arr: any): GeneratedQuestion[] {
+export function validateQuestionsArray(arr: unknown): GeneratedQuestion[] {
     if (!Array.isArray(arr)) throw new Error("AI output is not an array");
     const clean: GeneratedQuestion[] = [];
     for (const item of arr) {
