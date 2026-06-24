@@ -130,13 +130,13 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
     const closePanel = useCallback(() => setOpen(false), []);
     useClickOutside(containerRef, closePanel, open && !isMobile);
 
-    // Lock body scroll when mobile panel is open
+    // Lock body scroll when settings panel is open
     useEffect(() => {
-        if (isMobile && open) {
+        if (open) {
             document.body.style.overflow = "hidden";
             return () => { document.body.style.overflow = ""; };
         }
-    }, [isMobile, open]);
+    }, [open]);
 
     const accountLabel = useMemo(() => {
         if (!session?.user) return "Guest Account";
@@ -235,8 +235,8 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
             )}
 
             <AnimatePresence>
-                {/* Mobile backdrop overlay */}
-                {open && isMobile && (
+                {/* Backdrop overlay */}
+                {open && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -257,15 +257,15 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                     <motion.div
                         initial={isMobile
                             ? { opacity: 0, y: 60 }
-                            : { opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }
+                            : { opacity: 0, x: bubblePosition.endsWith("left") ? -340 : 340 }
                         }
                         animate={isMobile
                             ? { opacity: 1, y: 0 }
-                            : { opacity: 1, scale: 1, y: 0 }
+                            : { opacity: 1, x: 0 }
                         }
                         exit={isMobile
                             ? { opacity: 0, y: 60 }
-                            : { opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }
+                            : { opacity: 0, x: bubblePosition.endsWith("left") ? -340 : 340 }
                         }
                         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                         role="menu"
@@ -283,47 +283,52 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
                             padding: "20px 16px env(safe-area-inset-bottom, 16px)",
                             zIndex: 999,
                         } : {
-                            position: "absolute" as const,
-                            ...panelPlacementStyle,
-                            padding: bubbleMetrics.pad,
-                            width: "300px",
-                            maxHeight: "calc(100vh - 100px)",
+                            position: "fixed" as const,
+                            top: 0,
+                            bottom: 0,
+                            left: bubblePosition.endsWith("left") ? 0 : "auto",
+                            right: bubblePosition.endsWith("right") ? 0 : "auto",
+                            width: "340px",
+                            height: "100vh",
+                            maxHeight: "100vh",
                             overflowY: "auto" as const,
-                            zIndex: 1000,
+                            borderRadius: bubblePosition.endsWith("left") ? "0 24px 24px 0" : "24px 0 0 24px",
+                            padding: "32px 24px",
+                            zIndex: 999,
                         }}
                     >
-                        {/* Mobile drag handle */}
-                        {isMobile && (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "12px" }}>
+                        {/* Settings Header with Close Button */}
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "16px" }}>
+                            {isMobile && (
                                 <div style={{ width: "40px", height: "4px", borderRadius: "999px", background: "rgba(255,255,255,0.2)", marginBottom: "12px" }} />
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                                    <span style={{ fontWeight: 900, fontSize: "16px", display: "flex", alignItems: "center", gap: "6px" }}>
-                                        <Settings className="w-4 h-4 text-indigo-400" />
-                                        Settings
-                                    </span>
-                                    <button
-                                        onClick={closePanel}
-                                        style={{
-                                            background: "rgba(255,255,255,0.06)",
-                                            border: "1px solid rgba(255,255,255,0.1)",
-                                            borderRadius: "999px",
-                                            width: "32px",
-                                            height: "32px",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            cursor: "pointer",
-                                            color: "var(--text-secondary)",
-                                            fontSize: "18px",
-                                            fontFamily: "Nunito, sans-serif",
-                                        }}
-                                        aria-label="Close settings"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
+                            )}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                                <span style={{ fontWeight: 900, fontSize: "16px", display: "flex", alignItems: "center", gap: "6px" }}>
+                                    <Settings className="w-5 h-5 text-indigo-400" />
+                                    Settings
+                                </span>
+                                <button
+                                    onClick={closePanel}
+                                    style={{
+                                        background: "rgba(255,255,255,0.06)",
+                                        border: "1px solid rgba(255,255,255,0.1)",
+                                        borderRadius: "999px",
+                                        width: "32px",
+                                        height: "32px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        cursor: "pointer",
+                                        color: "var(--text-secondary)",
+                                        fontSize: "18px",
+                                        fontFamily: "Nunito, sans-serif",
+                                    }}
+                                    aria-label="Close settings"
+                                >
+                                    ×
+                                </button>
                             </div>
-                        )}
+                        </div>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
                             <div style={{ minWidth: 0, flex: 1 }}>
                                 <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -529,7 +534,7 @@ function Navbar() {
                                     className="btn-secondary navbar-auth-btn flex items-center gap-1.5"
                                 >
                                     <LogIn className="w-4 h-4 text-indigo-400" />
-                                    Login
+                                    <span className="navbar-btn-text">Login</span>
                                 </motion.button>
                             </Link>
                             <Link href="/register" className="navbar-link">

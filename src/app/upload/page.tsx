@@ -384,7 +384,7 @@ export default function UploadPage() {
                                         <div className="p-2 rounded-xl mb-3 flex items-center justify-center" style={{ background: isActive ? m.bg : "rgba(255,255,255,0.03)", color: isActive ? m.color : "inherit" }}>
                                             {m.icon}
                                         </div>
-                                        <div className="fontWeight-extrabold text-sm mb-1">{m.label}</div>
+                                        <div className="font-extrabold text-sm mb-1">{m.label}</div>
                                         <div className="text-[11px] font-semibold leading-relaxed opacity-85">{m.desc}</div>
                                     </motion.button>
                                 );
@@ -420,7 +420,7 @@ export default function UploadPage() {
                                                 boxShadow: isActive ? `0 0 20px ${d.color}15` : "none"
                                             }}
                                         >
-                                            <div className="fontWeight-extrabold text-sm mb-1" style={{ color: isActive ? d.color : "inherit" }}>{d.label}</div>
+                                            <div className="font-extrabold text-sm mb-1" style={{ color: isActive ? d.color : "inherit" }}>{d.label}</div>
                                             <div className="text-[11px] font-semibold leading-relaxed opacity-85">{d.desc}</div>
                                         </motion.button>
                                     );
