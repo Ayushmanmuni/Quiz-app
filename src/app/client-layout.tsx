@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { SessionProvider } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
@@ -64,12 +64,25 @@ function useClickOutside(ref: React.RefObject<HTMLElement>, onOutside: () => voi
     }, [enabled, onOutside, ref]);
 }
 
+function useIsMobile(breakpoint = 640) {
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
+        setIsMobile(mql.matches);
+        const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+        mql.addEventListener("change", handler);
+        return () => mql.removeEventListener("change", handler);
+    }, [breakpoint]);
+    return isMobile;
+}
+
 function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" }) {
     const { data: session } = useSession();
     const router = useRouter();
     const pathname = usePathname();
     const containerRef = useRef<HTMLDivElement>(null);
     const [open, setOpen] = useState(false);
+    const isMobile = useIsMobile();
 
     const [themePref, setThemePref] = useState<ThemePref>(() => getStored<ThemePref>("quizai_theme_pref", "system"));
     const [resolvedTheme, setResolvedTheme] = useState<ThemeMode>("dark");
@@ -113,7 +126,16 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
         return () => window.clearTimeout(t);
     }, [notes]);
 
-    useClickOutside(containerRef, () => setOpen(false), open);
+    const closePanel = useCallback(() => setOpen(false), []);
+    useClickOutside(containerRef, closePanel, open && !isMobile);
+
+    // Lock body scroll when mobile panel is open
+    useEffect(() => {
+        if (isMobile && open) {
+            document.body.style.overflow = "hidden";
+            return () => { document.body.style.overflow = ""; };
+        }
+    }, [isMobile, open]);
 
     const accountLabel = useMemo(() => {
         if (!session?.user) return "Guest Account";
@@ -212,22 +234,95 @@ function SettingsMenu({ variant = "navbar" }: { variant?: "navbar" | "floating" 
             )}
 
             <AnimatePresence>
+                {/* Mobile backdrop overlay */}
+                {open && isMobile && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={closePanel}
+                        style={{
+                            position: "fixed",
+                            inset: 0,
+                            background: "rgba(0,0,0,0.6)",
+                            backdropFilter: "blur(4px)",
+                            WebkitBackdropFilter: "blur(4px)",
+                            zIndex: 998,
+                        }}
+                    />
+                )}
                 {open && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }}
-                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        initial={isMobile
+                            ? { opacity: 0, y: 60 }
+                            : { opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }
+                        }
+                        animate={isMobile
+                            ? { opacity: 1, y: 0 }
+                            : { opacity: 1, scale: 1, y: 0 }
+                        }
+                        exit={isMobile
+                            ? { opacity: 0, y: 60 }
+                            : { opacity: 0, scale: 0.93, y: variant === "floating" && bubblePosition.startsWith("bottom") ? 10 : -10 }
+                        }
+                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                         role="menu"
                         aria-label="Settings menu"
-                        className="glass-strong settings-panel absolute"
-                        style={{
+                        className="glass-strong settings-panel"
+                        style={isMobile ? {
+                            position: "fixed",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            width: "100%",
+                            maxHeight: "85vh",
+                            overflowY: "auto",
+                            borderRadius: "24px 24px 0 0",
+                            padding: "20px 16px env(safe-area-inset-bottom, 16px)",
+                            zIndex: 999,
+                        } : {
+                            position: "absolute" as const,
                             ...panelPlacementStyle,
                             padding: bubbleMetrics.pad,
                             width: "300px",
+                            maxHeight: "calc(100vh - 100px)",
+                            overflowY: "auto" as const,
                             zIndex: 1000,
                         }}
                     >
+                        {/* Mobile drag handle */}
+                        {isMobile && (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "12px" }}>
+                                <div style={{ width: "40px", height: "4px", borderRadius: "999px", background: "rgba(255,255,255,0.2)", marginBottom: "12px" }} />
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                                    <span style={{ fontWeight: 900, fontSize: "16px", display: "flex", alignItems: "center", gap: "6px" }}>
+                                        <Settings className="w-4 h-4 text-indigo-400" />
+                                        Settings
+                                    </span>
+                                    <button
+                                        onClick={closePanel}
+                                        style={{
+                                            background: "rgba(255,255,255,0.06)",
+                                            border: "1px solid rgba(255,255,255,0.1)",
+                                            borderRadius: "999px",
+                                            width: "32px",
+                                            height: "32px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            cursor: "pointer",
+                                            color: "var(--text-secondary)",
+                                            fontSize: "18px",
+                                            fontFamily: "Nunito, sans-serif",
+                                        }}
+                                        aria-label="Close settings"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "12px" }}>
                             <div style={{ minWidth: 0, flex: 1 }}>
                                 <div style={{ fontWeight: 800, fontSize: "14px", marginBottom: "2px", display: "flex", alignItems: "center", gap: "6px" }}>

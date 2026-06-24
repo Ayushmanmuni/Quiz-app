@@ -702,7 +702,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* ---- Settings Panel ---- */
 .settings-panel {
-    position: absolute;
     width: 360px;
     max-width: calc(100vw - 32px);
     box-shadow: 0 40px 120px rgba(0,0,0,0.45), 0 0 40px rgba(139,92,246,0.1);
@@ -710,8 +709,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: var(--text-primary);
 }
 
-/* ---- Media Queries ---- */
+/* ==========================================================================
+   Responsive: Tablet (≤ 768px)
+   ========================================================================== */
 @media (max-width: 768px) {
+    .navbar {
+        height: 60px;
+    }
+
     .navbar-container {
         padding: 0 16px;
     }
@@ -721,11 +726,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
     }
     
     .navbar-btn-text {
-        display: none; /* Hide button text to only show emoji on tablet/mobile */
+        display: none;
     }
     
     .navbar-user-name {
-        display: none; /* Hide name to save space */
+        display: none;
     }
     
     .navbar-user-badge {
@@ -737,30 +742,92 @@ input[type="range"]::-webkit-slider-thumb:hover {
         padding: 8px 14px;
         font-size: 13px;
     }
+
+    /* Buttons */
+    .btn-primary {
+        padding: 11px 24px;
+        font-size: 14px;
+    }
+
+    .btn-secondary {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    /* Cards */
+    .glass-strong {
+        border-radius: 18px;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+        padding: 28px 20px;
+    }
+
+    /* Icon circles */
+    .icon-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        font-size: 22px;
+    }
+
+    /* Badges */
+    .badge {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
 }
 
-@media (max-width: 480px) {
+/* ==========================================================================
+   Responsive: Mobile (≤ 640px)
+   ========================================================================== */
+@media (max-width: 640px) {
+    body {
+        font-size: 14px;
+    }
+
+    .navbar {
+        height: 56px;
+    }
+
     .navbar-container {
-        padding: 0 10px;
-        gap: 6px;
+        padding: 0 12px;
+        gap: 8px;
     }
-    
+
+    .navbar-logo-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        font-size: 16px;
+    }
+
     .navbar-logo-text {
-        display: none; /* Hide logo text, keep only brain emoji */
+        font-size: 18px;
     }
-    
+
     .navbar-actions {
         gap: 4px;
     }
     
     .navbar-auth-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+        gap: 4px;
+    }
+
+    .navbar-btn-action {
         padding: 6px 10px;
         font-size: 12px;
     }
 
+    /* Settings panel — bottom sheet on mobile (JS handles position: fixed) */
     .settings-panel {
-        width: calc(100vw - 32px) !important;
-        padding: 16px 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 24px 24px 0 0 !important;
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(139,92,246,0.1) !important;
     }
     
     .settings-pref-row {
@@ -771,6 +838,147 @@ input[type="range"]::-webkit-slider-thumb:hover {
     
     .settings-pref-select {
         width: 100% !important;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 13px;
+        border-radius: 14px;
+    }
+
+    .btn-secondary {
+        padding: 9px 18px;
+        font-size: 13px;
+        border-radius: 14px;
+    }
+
+    /* Glass cards */
+    .glass {
+        border-radius: 16px;
+    }
+
+    .glass-strong {
+        border-radius: 16px;
+    }
+
+    /* Input fields */
+    .input-field {
+        padding: 12px 14px;
+        font-size: 14px;
+        border-radius: 12px;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+        padding: 24px 16px;
+        border-radius: 16px;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+        height: 6px;
+    }
+
+    /* Option buttons */
+    .option-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+        border-radius: 12px;
+        gap: 10px;
+    }
+
+    .opt-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    /* Divider */
+    .divider {
+        margin: 16px 0;
+    }
+
+    /* Icon circles */
+    .icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        font-size: 20px;
+    }
+}
+
+/* ==========================================================================
+   Responsive: Small phones (≤ 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+    .navbar-container {
+        padding: 0 10px;
+        gap: 6px;
+    }
+    
+    .navbar-logo-text {
+        display: none;
+    }
+
+    .navbar-logo-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+    }
+    
+    .navbar-actions {
+        gap: 3px;
+    }
+    
+    .navbar-auth-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .navbar-btn-action {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+
+    /* Input fields */
+    .input-field {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .input-field-icon-left {
+        padding-left: 40px !important;
+    }
+
+    .input-field-icon-right {
+        padding-right: 40px !important;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .btn-secondary {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    /* Badges */
+    .badge {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+}
+
+/* ==========================================================================
+   Safe area padding for notched phones
+   ========================================================================== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .settings-panel {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
     }
 }
 
